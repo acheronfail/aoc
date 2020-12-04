@@ -16,7 +16,7 @@ fn num_trees_encountered(map: &str, slope: (usize, usize)) -> usize {
 }
 
 fn main() {
-    let map = include_str!("./input.txt");
+    let map = include_str!("./3.txt");
 
     println!("Part 1: {}", num_trees_encountered(map, (3, 1)));
     println!("Part 2: {}",

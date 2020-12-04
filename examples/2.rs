@@ -55,7 +55,7 @@ impl From<&str> for PasswordWithPolicy {
 fn main() {
     let mut part_1_valid_count = 0;
     let mut part_2_valid_count = 0;
-    for line in include_str!("./input.txt").lines() {
+    for line in include_str!("./2.txt").lines() {
         let pwp = PasswordWithPolicy::from(line);
         if pwp.is_valid_part_1() {
             part_1_valid_count += 1;

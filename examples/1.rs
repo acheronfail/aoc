@@ -1,4 +1,4 @@
-const INPUT: &str = include_str!("./input.txt");
+const INPUT: &str = include_str!("./1.txt");
 
 // --- Day 1: Report Repair ---
 // After saving Christmas five years in a row, you've decided to take a vacation at a nice resort on a tropical island. Surely, Christmas will go on without you.

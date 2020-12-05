@@ -142,12 +142,6 @@ fn main() {
         .map(|s| Passport::from(s.as_str()))
         .collect::<Vec<Passport>>();
 
-    println!(
-        "Part 1: {}",
-        passports.iter().filter(|p| p.part_1_valid()).count()
-    );
-    println!(
-        "Part 2: {}",
-        passports.iter().filter(|p| p.part_2_valid()).count()
-    );
+    aoc_lib::set_part_1!(passports.iter().filter(|p| p.part_1_valid()).count());
+    aoc_lib::set_part_2!(passports.iter().filter(|p| p.part_2_valid()).count());
 }

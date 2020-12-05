@@ -19,7 +19,11 @@ const INPUT: &str = include_str!("./1.txt");
 // In this list, the two entries that sum to 2020 are 1721 and 299. Multiplying them together produces 1721 * 299 = 514579, so the correct answer is 514579.
 // Of course, your expense report is much larger. Find the two entries that sum to 2020; what do you get if you multiply them together?
 fn main() {
-    let numbers = INPUT.split_ascii_whitespace().into_iter().map(|number| number.parse::<usize>().unwrap()).collect::<Vec<usize>>();
+    let numbers = INPUT
+        .split_ascii_whitespace()
+        .into_iter()
+        .map(|number| number.parse::<usize>().unwrap())
+        .collect::<Vec<usize>>();
     for (i, n) in numbers.iter().enumerate() {
         for (j, m) in numbers.iter().enumerate() {
             if i != j && n + m == 2020 {

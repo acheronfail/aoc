@@ -35,6 +35,13 @@ macro_rules! define_aoc_macro {
                 }};
             }
 
+            #[macro_export]
+            macro_rules! [<remove_ $ident>] {
+                () => {{
+                    std::fs::remove_file(concat!("/tmp/aoc-{}", stringify!($ident)))
+                }};
+            }
+
             macro_rules! [<submit_ $ident>] {
                 ($client:expr, $year:expr, $day:expr) => {{
                     let answer = [<get_ $ident>]!()?;

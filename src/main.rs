@@ -31,6 +31,10 @@ async fn main() -> Result<()> {
                 Err(e) => eprintln!("Failed to create new puzzle: {}", e),
             }
 
+            // clean up old answers
+            aoc_lib::remove_part_1!()?;
+            aoc_lib::remove_part_2!()?;
+
             // catch ^C and kill watch loop
             let running = Arc::new(AtomicBool::new(true));
             let running_ctrlc = running.clone();

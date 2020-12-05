@@ -92,11 +92,16 @@ pub async fn new_challenge(client: &Client, year: usize, day: usize) -> Result<(
 
 fn new_source_file(year: usize, day: usize) -> String {
     format!(
-        r#"// AoC {year} {day}
+        r#"// See: {base_url}/{year}/day/{day}
 fn main() {{
     let input = include_str!("./{day}.txt");
-    println!("{{}}", input);
+
+    // ...
+
+    aoc_lib::set_part_1!(0);
+    aoc_lib::set_part_2!(0);
 }}"#,
+        base_url = BASE_URL,
         year = year,
         day = day
     )

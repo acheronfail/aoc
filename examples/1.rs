@@ -27,11 +27,11 @@ fn main() {
     for (i, n) in numbers.iter().enumerate() {
         for (j, m) in numbers.iter().enumerate() {
             if i != j && n + m == 2020 {
-                println!("Part 1: {}", n * m);
+                aoc_lib::set_part_1!(n * m);
             }
             for (k, o) in numbers.iter().enumerate() {
                 if i != j && i != k && j != k && n + m + o == 2020 {
-                    println!("Part 2: {}", n * m * o);
+                    aoc_lib::set_part_2!(n * m * o);
                 }
             }
         }

@@ -34,13 +34,15 @@ fn main() {
         set.insert(id);
     }
 
-    println!("Part 1: {}", max_id);
+    aoc_lib::set_part_1!(max_id);
+
     let mut ids = set.drain().collect::<Vec<usize>>();
     ids.sort();
+
     for (i, n) in ids[0..ids.len() - 1].iter().enumerate() {
         let m = ids[i + 1];
         if m - n > 1 {
-            println!("Part 2: {}", n + 1);
+            aoc_lib::set_part_2!(n + 1);
         }
     }
 }

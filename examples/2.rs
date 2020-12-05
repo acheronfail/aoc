@@ -65,6 +65,6 @@ fn main() {
         }
     }
 
-    println!("Part 1: {}", part_1_valid_count);
-    println!("Part 2: {}", part_2_valid_count);
+    aoc_lib::set_part_1!(part_1_valid_count);
+    aoc_lib::set_part_2!(part_2_valid_count);
 }

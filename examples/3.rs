@@ -23,9 +23,8 @@ fn num_trees_encountered(map: &str, slope: (usize, usize)) -> usize {
 fn main() {
     let map = include_str!("./3.txt");
 
-    println!("Part 1: {}", num_trees_encountered(map, (3, 1)));
-    println!(
-        "Part 2: {}",
+    aoc_lib::set_part_1!(num_trees_encountered(map, (3, 1)));
+    aoc_lib::set_part_2!(
         num_trees_encountered(map, (1, 1))
             * num_trees_encountered(map, (3, 1))
             * num_trees_encountered(map, (5, 1))

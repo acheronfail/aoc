@@ -5,8 +5,8 @@ use std::string::ToString;
 use anyhow::Result;
 use reqwest::header::{self, HeaderMap, HeaderValue};
 use reqwest::{Client, ClientBuilder};
+use scraper::{Html, Selector};
 
-use crate::aoc;
 use crate::credentials;
 
 const BASE_URL: &str = "https://adventofcode.com";
@@ -31,6 +31,33 @@ pub async fn get_input(client: &Client, year: usize, day: usize) -> Result<Strin
         .await?
         .text()
         .await?)
+}
+
+pub async fn get_description(client: &Client, year: usize, day: usize) -> Result<String> {
+    let html = client
+        .get(&format!(
+            "{}/{year}/day/{day}",
+            BASE_URL,
+            year = year,
+            day = day
+        ))
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    let document = Html::parse_document(&html);
+    let selector = Selector::parse(r#".day-desc"#).expect("failed to init html selector");
+
+    let mut description = String::new();
+    for element in document.select(&selector) {
+        let text = html2text::from_read(&element.html().as_bytes()[..], 100);
+        for line in text.lines() {
+            description.push_str(&format!("// {}\n", line));
+        }
+    }
+
+    Ok(description)
 }
 
 pub async fn submit_answer(
@@ -77,31 +104,34 @@ pub async fn new_challenge(client: &Client, year: usize, day: usize) -> Result<(
         .truncate(true)
         .write(true)
         .open(format!("examples/{day}.txt", day = day))?
-        .write_all(aoc::get_input(&client, year, day).await?.as_bytes())?;
+        .write_all(get_input(client, year, day).await?.as_bytes())?;
 
     // write rust source file
+    let description = get_description(client, year, day).await?;
     OpenOptions::new()
         .create_new(true)
         .truncate(false)
         .write(true)
         .open(format!("examples/{day}.rs", day = day))?
-        .write_all(new_source_file(year, day).as_bytes())?;
+        .write_all(new_source_file(description.as_str(), year, day).as_bytes())?;
 
     Ok(())
 }
 
-fn new_source_file(year: usize, day: usize) -> String {
+fn new_source_file(description: &str, year: usize, day: usize) -> String {
     format!(
         r#"// See: {base_url}/{year}/day/{day}
+{description}
 fn main() {{
     let input = include_str!("./{day}.txt");
 
     // ...
 
     aoc_lib::set_part_1!(0);
-    aoc_lib::set_part_2!(0);
+    // aoc_lib::set_part_2!(0);
 }}"#,
         base_url = BASE_URL,
+        description = description,
         year = year,
         day = day
     )

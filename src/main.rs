@@ -54,8 +54,8 @@ async fn main() -> Result<()> {
             child.kill()?;
 
             // prompt to submit answers
-            let answer = prompt_from_stdin(Some("Submit answers?: "))?;
-            if matches!(answer.as_str(), "y" | "yes" | "Y" | "YES") {
+            let answer = prompt_from_stdin(Some("Submit answers? [Y/n]: "))?;
+            if matches!(answer.as_str(), "" | "y" | "yes" | "Y" | "YES") {
                 aoc_lib::submit_answers(&client, year, day).await?;
             }
         }

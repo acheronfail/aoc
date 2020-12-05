@@ -44,9 +44,19 @@ macro_rules! define_aoc_macro {
 
             macro_rules! [<submit_ $ident>] {
                 ($client:expr, $year:expr, $day:expr) => {{
-                    let answer = [<get_ $ident>]!()?;
-                    println!("Submitting part 1 answer: '{}'...", &answer);
-                    aoc::submit_answer($client, $year, $day, AocPart::One, answer.as_str()).await?;
+                    match [<get_ $ident>]!() {
+                        Ok(answer) => {
+                            println!("Submitting {} answer: '{}'...", stringify!($ident), &answer);
+                            aoc::submit_answer($client, $year, $day, AocPart::One, answer.as_str()).await?;
+                        },
+                        Err(e) => {
+                            if e.kind() == std::io::ErrorKind::NotFound {
+                                eprintln!("Not submitting {} since it doesn't exist", stringify!($ident));
+                            } else {
+                                eprintln!("Error submitting {}: {}", stringify!($ident), e);
+                            }
+                        }
+                    }
                 }};
             }
         }

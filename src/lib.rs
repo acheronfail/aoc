@@ -2,11 +2,7 @@ pub mod aoc;
 pub mod args;
 pub mod credentials;
 
-use anyhow::Result;
 use paste::paste;
-use reqwest::Client;
-
-use aoc::AocPart;
 
 macro_rules! define_aoc_macro {
     ($ident:ident) => {
@@ -29,9 +25,27 @@ macro_rules! define_aoc_macro {
                 }};
             }
 
+            #[macro_export]
             macro_rules! [<get_ $ident>] {
                 () => {{
                     std::fs::read_to_string(concat!("/tmp/aoc-{}", stringify!($ident)))
+                }};
+            }
+
+            #[macro_export]
+            macro_rules! [<$ident _complete>] {
+                () => {{
+                    use aoc_lib::[<get_ $ident>];
+                    match [<get_ $ident>]!() {
+                        Ok(s) => Ok(s.contains("--- Part Two ---")),
+                        Err(e) => {
+                            if e.kind() == std::io::ErrorKind::NotFound {
+                                Ok(false)
+                            } else {
+                                Err(e)
+                            }
+                        }
+                    }
                 }};
             }
 
@@ -42,8 +56,11 @@ macro_rules! define_aoc_macro {
                 }};
             }
 
+            #[macro_export]
             macro_rules! [<submit_ $ident>] {
                 ($client:expr, $year:expr, $day:expr) => {{
+                    use aoc_lib::[<get_ $ident>];
+                    use aoc_lib::aoc::{self, AocPart};
                     match [<get_ $ident>]!() {
                         Ok(answer) => {
                             println!("Submitting {} answer: '{}'...", stringify!($ident), &answer);
@@ -65,10 +82,3 @@ macro_rules! define_aoc_macro {
 
 define_aoc_macro!(part_1);
 define_aoc_macro!(part_2);
-
-pub async fn submit_answers(client: &Client, year: usize, day: usize) -> Result<()> {
-    submit_part_1!(client, year, day);
-    submit_part_2!(client, year, day);
-
-    Ok(())
-}

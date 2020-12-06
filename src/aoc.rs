@@ -1,5 +1,5 @@
 use std::fs::OpenOptions;
-use std::io::Write;
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::string::ToString;
 
 use anyhow::Result;
@@ -34,22 +34,13 @@ pub async fn get_input(client: &Client, year: usize, day: usize) -> Result<Strin
 }
 
 pub async fn get_description(client: &Client, year: usize, day: usize) -> Result<String> {
-    let html = client
-        .get(&format!(
-            "{}/{year}/day/{day}",
-            BASE_URL,
-            year = year,
-            day = day
-        ))
-        .send()
-        .await?
-        .text()
-        .await?;
+    let url = format!("{}/{year}/day/{day}", BASE_URL, year = year, day = day);
+    let html = client.get(&url).send().await?.text().await?;
 
     let document = Html::parse_document(&html);
     let selector = Selector::parse(r#".day-desc"#).expect("failed to init html selector");
 
-    let mut description = String::new();
+    let mut description = format!("// See: {}\n", url);
     for element in document.select(&selector) {
         let text = html2text::from_read(&element.html().as_bytes()[..], 100);
         for line in text.lines() {
@@ -97,31 +88,47 @@ pub fn get_client() -> Result<Client> {
         .build()?)
 }
 
-pub async fn new_challenge(client: &Client, year: usize, day: usize) -> Result<()> {
-    // write input file
-    OpenOptions::new()
+pub async fn create_or_update_challenge(client: &Client, year: usize, day: usize) -> Result<()> {
+    // create input file if it didn't exist
+    if let Ok(mut f) = OpenOptions::new()
         .create_new(true)
-        .truncate(true)
         .write(true)
-        .open(format!("examples/{day}.txt", day = day))?
-        .write_all(get_input(client, year, day).await?.as_bytes())?;
+        .open(format!("examples/{day}.txt", day = day))
+    {
+        f.write_all(get_input(client, year, day).await?.as_bytes())?;
+    }
 
-    // write rust source file
+    // create or update rust source file
     let description = get_description(client, year, day).await?;
-    OpenOptions::new()
-        .create_new(true)
-        .truncate(false)
+    if let Ok(mut f) = OpenOptions::new()
+        .create(true)
+        .read(true)
         .write(true)
-        .open(format!("examples/{day}.rs", day = day))?
-        .write_all(new_source_file(description.as_str(), year, day).as_bytes())?;
+        .open(&format!("examples/{day}.rs", day = day))
+    {
+        // file already existed with data, so remove the first comment (puzzle description) and re-write it
+        if f.metadata()?.len() > 0 {
+            let mut contents = String::new();
+            f.read_to_string(&mut contents)?;
+
+            let mut updated = String::from(description);
+            contents
+                .lines()
+                .skip_while(|line| line.starts_with("//"))
+                .for_each(|line| updated.push_str(&format!("{}\n", line)));
+            f.seek(SeekFrom::Start(0))?;
+            f.write_all(updated.as_bytes())?;
+        } else {
+            f.write_all(new_source_file(description.as_str(), day).as_bytes())?;
+        }
+    }
 
     Ok(())
 }
 
-fn new_source_file(description: &str, year: usize, day: usize) -> String {
+fn new_source_file(description: &str, day: usize) -> String {
     format!(
-        r#"// See: {base_url}/{year}/day/{day}
-{description}
+        r#"{description}
 fn main() {{
     let input = include_str!("./{day}.txt");
 
@@ -130,9 +137,7 @@ fn main() {{
     aoc_lib::set_part_1!(0);
     // aoc_lib::set_part_2!(0);
 }}"#,
-        base_url = BASE_URL,
         description = description,
-        year = year,
         day = day
     )
 }

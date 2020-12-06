@@ -1,4 +1,4 @@
-use std::fs::OpenOptions;
+use std::fs::{self, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::string::ToString;
 
@@ -29,13 +29,20 @@ pub async fn get_input(client: &Client, year: usize, day: usize) -> Result<Strin
         ))
         .send()
         .await?
+        .error_for_status()?
         .text()
         .await?)
 }
 
 pub async fn get_description(client: &Client, year: usize, day: usize) -> Result<String> {
     let url = format!("{}/{year}/day/{day}", BASE_URL, year = year, day = day);
-    let html = client.get(&url).send().await?.text().await?;
+    let html = client
+        .get(&url)
+        .send()
+        .await?
+        .error_for_status()?
+        .text()
+        .await?;
 
     let document = Html::parse_document(&html);
     let selector = Selector::parse(r#".day-desc"#).expect("failed to init html selector");
@@ -67,7 +74,8 @@ pub async fn submit_answer(
         ))
         .form(&[("level", part.to_string().as_str()), ("answer", answer)])
         .send()
-        .await?;
+        .await?
+        .error_for_status()?;
 
     if res.status().is_success() {
         println!("Successfully submitted!");
@@ -90,12 +98,20 @@ pub fn get_client() -> Result<Client> {
 
 pub async fn create_or_update_challenge(client: &Client, year: usize, day: usize) -> Result<()> {
     // create input file if it didn't exist
+    let input_file = format!("examples/{day}.txt", day = day);
     if let Ok(mut f) = OpenOptions::new()
         .create_new(true)
         .write(true)
-        .open(format!("examples/{day}.txt", day = day))
+        .open(&input_file)
     {
-        f.write_all(get_input(client, year, day).await?.as_bytes())?;
+        match get_input(client, year, day).await {
+            Ok(input) => f.write_all(input.as_bytes())?,
+            Err(e) => {
+                drop(f);
+                fs::remove_file(&input_file)?;
+                return Err(e);
+            }
+        }
     }
 
     // create or update rust source file

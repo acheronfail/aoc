@@ -24,10 +24,8 @@ fn prompt_from_stdin(prompt: Option<&str>) -> Result<String> {
 
 async fn run_loop(client: &Client, year: usize, day: usize) -> Result<Option<AocPart>> {
     // create new challenge if it doesn't exist
-    match aoc_lib::aoc::create_or_update_challenge(&client, year, day).await {
-        Ok(_) => println!("Created: {year}-{day}", year = year, day = day),
-        Err(e) => eprintln!("Failed to create new puzzle: {}", e),
-    }
+    println!("Loading challenge {year}-{day}...", year = year, day = day);
+    aoc_lib::aoc::create_or_update_challenge(&client, year, day).await?;
 
     // clean up old answers
     aoc_lib::remove_part_1!();
@@ -40,6 +38,7 @@ async fn run_loop(client: &Client, year: usize, day: usize) -> Result<Option<Aoc
     let _ = ctrlc::set_handler(move || running_ctrlc.store(false, Ordering::SeqCst));
 
     // start a watch/run loop
+    println!("Starting watch loop...");
     let mut child = Command::new("cargo")
         .args(&["watch", "-x", &format!("run --example {day}", day = day)])
         .stdin(Stdio::inherit())
@@ -76,7 +75,10 @@ async fn main() -> Result<()> {
     let args = Args::parse();
     let client = aoc_lib::aoc::get_client()?;
 
-    if matches!(run_loop(&client, args.year, args.day).await?, Some(AocPart::One)) {
+    if matches!(
+        run_loop(&client, args.year, args.day).await?,
+        Some(AocPart::One)
+    ) {
         run_loop(&client, args.year, args.day).await?;
     }
 

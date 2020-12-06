@@ -33,23 +33,6 @@ macro_rules! define_aoc_macro {
             }
 
             #[macro_export]
-            macro_rules! [<$ident _complete>] {
-                () => {{
-                    use aoc_lib::[<get_ $ident>];
-                    match [<get_ $ident>]!() {
-                        Ok(s) => Ok(s.contains("--- Part Two ---")),
-                        Err(e) => {
-                            if e.kind() == std::io::ErrorKind::NotFound {
-                                Ok(false)
-                            } else {
-                                Err(e)
-                            }
-                        }
-                    }
-                }};
-            }
-
-            #[macro_export]
             macro_rules! [<remove_ $ident>] {
                 () => {{
                     let path = std::path::PathBuf::from(concat!("/tmp/aoc-{}", stringify!($ident)));
@@ -62,12 +45,14 @@ macro_rules! define_aoc_macro {
             #[macro_export]
             macro_rules! [<submit_ $ident>] {
                 ($client:expr, $year:expr, $day:expr) => {{
+                    use std::str::FromStr;
                     use aoc_lib::[<get_ $ident>];
                     use aoc_lib::aoc::{self, AocPart};
+
                     match [<get_ $ident>]!() {
                         Ok(answer) => {
                             println!("Submitting {} answer: '{}'...", stringify!($ident), &answer);
-                            aoc::submit_answer($client, $year, $day, AocPart::One, answer.as_str()).await?;
+                            aoc::submit_answer($client, $year, $day, AocPart::from_str(stringify!($ident))?, answer.as_str()).await?
                         },
                         Err(e) => {
                             if e.kind() == std::io::ErrorKind::NotFound {
@@ -75,6 +60,8 @@ macro_rules! define_aoc_macro {
                             } else {
                                 eprintln!("Error submitting {}: {}", stringify!($ident), e);
                             }
+
+                            false
                         }
                     }
                 }};

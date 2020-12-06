@@ -13,9 +13,9 @@ const BASE_URL: &str = "https://adventofcode.com";
 
 #[derive(Copy, Clone, strum_macros::EnumString, strum_macros::ToString)]
 pub enum AocPart {
-    #[strum(serialize = "1")]
+    #[strum(serialize = "part_1", to_string = "1")]
     One,
-    #[strum(serialize = "2")]
+    #[strum(serialize = "part_2", to_string = "2")]
     Two,
 }
 
@@ -59,7 +59,6 @@ pub async fn get_description(client: &Client, year: usize, day: usize) -> Result
         }
     }
 
-    description.push('\n');
     Ok(description)
 }
 
@@ -69,7 +68,7 @@ pub async fn submit_answer(
     day: usize,
     part: AocPart,
     answer: &str,
-) -> Result<()> {
+) -> Result<bool> {
     let res = client
         .post(&format!(
             "{}/{year}/day/{day}/answer",
@@ -83,12 +82,23 @@ pub async fn submit_answer(
         .error_for_status()?;
 
     if res.status().is_success() {
-        println!("Successfully submitted!");
+        let text = res.text().await?;
+        if text.contains("That's not the right answer") {
+            eprintln!("Incorrect answer! {}", if text.contains("your answer is too high.") {
+                "Your answer is too high!"
+            } else {
+                "Your answer is too low!"
+            });
+
+            Ok(false)
+        } else {
+            println!("Correct answer! 😁");
+            Ok(true)
+        }
     } else {
         println!("Error submitting! {:?}", res.status());
+        Ok(false)
     }
-
-    Ok(())
 }
 
 pub fn get_client() -> Result<Client> {
@@ -145,6 +155,13 @@ pub async fn create_or_update_challenge(client: &Client, year: usize, day: usize
     }
 
     Ok(())
+}
+
+pub fn is_part_1_complete(year: usize, day: usize) -> Result<bool> {
+    Ok(
+        fs::read_to_string(&format!("examples/{year}-{day}.rs", year = year, day = day))?
+            .contains("--- Part Two ---"),
+    )
 }
 
 fn new_source_file(description: &str, year: usize, day: usize) -> String {

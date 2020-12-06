@@ -22,7 +22,12 @@ fn prompt_from_stdin(prompt: Option<&str>) -> Result<String> {
     Ok(answer.trim().to_string())
 }
 
-async fn run_loop(client: &Client, year: usize, day: usize) -> Result<Option<AocPart>> {
+async fn run_loop(
+    client: &Client,
+    year: usize,
+    day: usize,
+    running: &Arc<AtomicBool>,
+) -> Result<Option<AocPart>> {
     // create new challenge if it doesn't exist
     println!("Loading challenge {year}-{day}...", year = year, day = day);
     aoc_lib::aoc::create_or_update_challenge(&client, year, day).await?;
@@ -32,9 +37,8 @@ async fn run_loop(client: &Client, year: usize, day: usize) -> Result<Option<Aoc
     aoc_lib::remove_part_2!();
 
     // catch ^C and kill watch loop
-    let running = Arc::new(AtomicBool::new(true));
-    let running_ctrlc = running.clone();
     // ignore errors (fails if we try to set it more than once)
+    let running_ctrlc = running.clone();
     let _ = ctrlc::set_handler(move || {
         running_ctrlc.store(false, Ordering::SeqCst);
         println!("\rStopping watch loop...");
@@ -43,7 +47,11 @@ async fn run_loop(client: &Client, year: usize, day: usize) -> Result<Option<Aoc
     // start a watch/run loop
     println!("Starting watch loop...");
     let mut child = Command::new("cargo")
-        .args(&["watch", "-x", &format!("run --example {year}-{day}", year = year, day = day)])
+        .args(&[
+            "watch",
+            "-x",
+            &format!("run --example {year}-{day}", year = year, day = day),
+        ])
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
@@ -58,17 +66,25 @@ async fn run_loop(client: &Client, year: usize, day: usize) -> Result<Option<Aoc
     }
 
     // prompt to submit answers
-    let answer = prompt_from_stdin(Some("Submit answers? [Y/n]: "))?;
-    if matches!(answer.as_str(), "" | "y" | "yes" | "Y" | "YES") {
-        if aoc_lib::part_1_complete!()? {
-            aoc_lib::submit_part_2!(&client, year, day);
-            Ok(Some(AocPart::Two))
-        } else {
-            aoc_lib::submit_part_1!(&client, year, day);
-            Ok(Some(AocPart::One))
+    let answer = prompt_from_stdin(Some("Submit answers? [Y/n/q]: "))?;
+    match answer.as_str() {
+        "" | "y" | "yes" | "Y" | "YES" => {
+            if aoc_lib::aoc::is_part_1_complete(year, day)? {
+                if aoc_lib::submit_part_2!(&client, year, day) {
+                    Ok(Some(AocPart::Two))
+                } else {
+                    Ok(Some(AocPart::One))
+                }
+            } else {
+                if aoc_lib::submit_part_1!(&client, year, day) {
+                    Ok(Some(AocPart::One))
+                } else {
+                    Ok(None)
+                }
+            }
         }
-    } else {
-        Ok(None)
+        "q" | "Q" | "quit" | "QUIT" => std::process::exit(0),
+        _ => Ok(None),
     }
 }
 
@@ -77,11 +93,12 @@ async fn main() -> Result<()> {
     let args = Args::parse();
     let client = aoc_lib::aoc::get_client()?;
 
-    if matches!(
-        run_loop(&client, args.year, args.day).await?,
-        Some(AocPart::One)
+    let running = Arc::new(AtomicBool::new(true));
+    while !matches!(
+        run_loop(&client, args.year, args.day, &running).await?,
+        Some(AocPart::Two)
     ) {
-        run_loop(&client, args.year, args.day).await?;
+        running.store(true, Ordering::SeqCst);
     }
 
     Ok(())

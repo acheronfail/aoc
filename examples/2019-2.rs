@@ -138,7 +138,7 @@ impl Program {
         let mut op_codes = vec![];
         let mut int_code_iter = int_codes.iter().peekable();
         while int_code_iter.peek().is_some() {
-            op_codes.push(OpCode::from_iter(&mut int_code_iter));
+            op_codes.push(OpCode::from(&mut int_code_iter));
         }
 
         Program {
@@ -155,12 +155,8 @@ impl Program {
         let mut ip = 0;
         loop {
             match self.op_codes[ip] {
-                OpCode::Add { lhs, rhs, output } => {
-                    memory[output] = memory[lhs] + memory[rhs]
-                }
-                OpCode::Mult { lhs, rhs, output } => {
-                    memory[output] = memory[lhs] * memory[rhs]
-                }
+                OpCode::Add { lhs, rhs, output } => memory[output] = memory[lhs] + memory[rhs],
+                OpCode::Mult { lhs, rhs, output } => memory[output] = memory[lhs] * memory[rhs],
                 OpCode::Halt => break,
                 OpCode::Unknown => continue,
             }
@@ -187,11 +183,11 @@ pub enum OpCode {
     Unknown,
 }
 
-impl OpCode {
-    pub fn from_iter<'a, I>(iter: &mut I) -> OpCode
-    where
-        I: Iterator<Item = &'a IntCode>,
-    {
+impl<'a, I> From<&mut I> for OpCode
+where
+    I: Iterator<Item = &'a IntCode>,
+{
+    fn from(iter: &mut I) -> OpCode {
         match iter.next().unwrap() {
             1 => OpCode::Add {
                 lhs: *iter.next().unwrap(),

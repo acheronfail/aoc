@@ -6,9 +6,13 @@ use std::thread;
 use std::time::Duration;
 
 use anyhow::Result;
-use aoc_lib::aoc::AocPart;
 use aoc_lib::args::Args;
 use reqwest::Client;
+
+enum Action {
+    Continue,
+    Quit,
+}
 
 fn prompt_from_stdin(prompt: Option<&str>) -> Result<String> {
     if let Some(prompt) = prompt {
@@ -27,7 +31,7 @@ async fn run_loop(
     year: usize,
     day: usize,
     running: &Arc<AtomicBool>,
-) -> Result<Option<AocPart>> {
+) -> Result<Action> {
     // create new challenge if it doesn't exist
     println!("Loading challenge {year}-{day}...", year = year, day = day);
     aoc_lib::aoc::create_or_update_challenge(&client, year, day).await?;
@@ -71,20 +75,17 @@ async fn run_loop(
         "" | "y" | "yes" | "Y" | "YES" => {
             if aoc_lib::aoc::is_part_1_complete(year, day)? {
                 if aoc_lib::submit_part_2!(&client, year, day) {
-                    Ok(Some(AocPart::Two))
+                    Ok(Action::Quit)
                 } else {
-                    Ok(Some(AocPart::One))
+                    Ok(Action::Continue)
                 }
             } else {
-                if aoc_lib::submit_part_1!(&client, year, day) {
-                    Ok(Some(AocPart::One))
-                } else {
-                    Ok(None)
-                }
+                aoc_lib::submit_part_1!(&client, year, day);
+                Ok(Action::Continue)
             }
         }
-        "q" | "Q" | "quit" | "QUIT" => std::process::exit(0),
-        _ => Ok(None),
+        "q" | "Q" | "quit" | "QUIT" => Ok(Action::Quit),
+        _ => Ok(Action::Continue),
     }
 }
 
@@ -94,9 +95,9 @@ async fn main() -> Result<()> {
     let client = aoc_lib::aoc::get_client()?;
 
     let running = Arc::new(AtomicBool::new(true));
-    while !matches!(
+    while matches!(
         run_loop(&client, args.year, args.day, &running).await?,
-        Some(AocPart::Two)
+        Action::Continue
     ) {
         running.store(true, Ordering::SeqCst);
     }

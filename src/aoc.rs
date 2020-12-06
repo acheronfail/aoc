@@ -50,11 +50,16 @@ pub async fn get_description(client: &Client, year: usize, day: usize) -> Result
     let mut description = format!("// See: {}\n", url);
     for element in document.select(&selector) {
         let text = html2text::from_read(&element.html().as_bytes()[..], 100);
-        for line in text.lines() {
-            description.push_str(&format!("// {}\n", line));
+        for line in text.lines().map(|l| l.trim()) {
+            if line.len() > 0 {
+                description.push_str(&format!("// {}\n", line));
+            } else {
+                description.push_str("//\n");
+            }
         }
     }
 
+    description.push('\n');
     Ok(description)
 }
 
@@ -145,6 +150,7 @@ pub async fn create_or_update_challenge(client: &Client, year: usize, day: usize
 fn new_source_file(description: &str, day: usize) -> String {
     format!(
         r#"{description}
+
 fn main() {{
     let input = include_str!("./{day}.txt");
 

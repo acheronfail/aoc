@@ -52,8 +52,9 @@
 // In your expense report, *what is the product of the three entries that sum to `2020`?*
 
 
+
 fn main() {
-    let input = include_str!("./1.txt");
+    let input = include_str!("./2020-1.txt");
     let numbers = input
         .split_ascii_whitespace()
         .into_iter()

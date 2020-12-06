@@ -51,6 +51,7 @@
 //
 // In your expense report, *what is the product of the three entries that sum to `2020`?*
 
+
 fn main() {
     let input = include_str!("./1.txt");
     let numbers = input
@@ -58,6 +59,7 @@ fn main() {
         .into_iter()
         .map(|number| number.parse::<usize>().unwrap())
         .collect::<Vec<usize>>();
+
     for (i, n) in numbers.iter().enumerate() {
         for (j, m) in numbers.iter().enumerate() {
             if i != j && n + m == 2020 {

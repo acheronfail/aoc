@@ -83,17 +83,19 @@ pub async fn submit_answer(
 
     if res.status().is_success() {
         let text = res.text().await?;
-        if text.contains("That's not the right answer") {
-            eprintln!("Incorrect answer! {}", if text.contains("your answer is too high.") {
-                "Your answer is too high!"
-            } else {
-                "Your answer is too low!"
-            });
-
-            Ok(false)
-        } else {
+        if text.contains("That's the right answer") {
             println!("Correct answer! 😁");
             Ok(true)
+        } else {
+            println!("Incorrect answer!");
+            if text.contains("your answer is too high") {
+                println!("Your answer is too high!");
+            }
+            if text.contains("your answer is too low") {
+                println!("Your answer is too low!");
+            }
+
+            Ok(false)
         }
     } else {
         println!("Error submitting! {:?}", res.status());

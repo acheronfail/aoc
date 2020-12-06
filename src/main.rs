@@ -35,7 +35,10 @@ async fn run_loop(client: &Client, year: usize, day: usize) -> Result<Option<Aoc
     let running = Arc::new(AtomicBool::new(true));
     let running_ctrlc = running.clone();
     // ignore errors (fails if we try to set it more than once)
-    let _ = ctrlc::set_handler(move || running_ctrlc.store(false, Ordering::SeqCst));
+    let _ = ctrlc::set_handler(move || {
+        running_ctrlc.store(false, Ordering::SeqCst);
+        println!("\rStopping watch loop...");
+    });
 
     // start a watch/run loop
     println!("Starting watch loop...");
@@ -49,7 +52,6 @@ async fn run_loop(client: &Client, year: usize, day: usize) -> Result<Option<Aoc
     loop {
         thread::sleep(Duration::from_secs(1));
         if !running.load(Ordering::SeqCst) {
-            println!("\rStopping watch loop...");
             child.kill()?;
             break;
         }

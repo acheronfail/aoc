@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use anyhow::Result;
 use aoc_lib::aoc::AocPart;
-use aoc_lib::args::{ArgCommand, Args};
+use aoc_lib::args::Args;
 use reqwest::Client;
 
 fn prompt_from_stdin(prompt: Option<&str>) -> Result<String> {
@@ -76,13 +76,9 @@ async fn main() -> Result<()> {
     let args = Args::parse();
     let client = aoc_lib::aoc::get_client()?;
 
-    match args.command {
-        ArgCommand::New { year, day } => {
-            if matches!(run_loop(&client, year, day).await?, Some(AocPart::One)) {
-                run_loop(&client, year, day).await?;
-            }
-        }
-    };
+    if matches!(run_loop(&client, args.year, args.day).await?, Some(AocPart::One)) {
+        run_loop(&client, args.year, args.day).await?;
+    }
 
     Ok(())
 }

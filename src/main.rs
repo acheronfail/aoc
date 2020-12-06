@@ -43,7 +43,7 @@ async fn run_loop(client: &Client, year: usize, day: usize) -> Result<Option<Aoc
     // start a watch/run loop
     println!("Starting watch loop...");
     let mut child = Command::new("cargo")
-        .args(&["watch", "-x", &format!("run --example {day}", day = day)])
+        .args(&["watch", "-x", &format!("run --example {year}-{day}", year = year, day = day)])
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())

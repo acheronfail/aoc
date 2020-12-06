@@ -32,8 +32,8 @@ async fn main() -> Result<()> {
             }
 
             // clean up old answers
-            aoc_lib::remove_part_1!()?;
-            aoc_lib::remove_part_2!()?;
+            aoc_lib::remove_part_1!();
+            aoc_lib::remove_part_2!();
 
             // catch ^C and kill watch loop
             let running = Arc::new(AtomicBool::new(true));

@@ -52,7 +52,10 @@ macro_rules! define_aoc_macro {
             #[macro_export]
             macro_rules! [<remove_ $ident>] {
                 () => {{
-                    std::fs::remove_file(concat!("/tmp/aoc-{}", stringify!($ident)))
+                    let path = std::path::PathBuf::from(concat!("/tmp/aoc-{}", stringify!($ident)));
+                    if path.exists() {
+                        std::fs::remove_file(&path)?;
+                    }
                 }};
             }
 

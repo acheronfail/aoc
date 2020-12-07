@@ -83,56 +83,59 @@
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
+fn n_bag_colors_containing(color: &str, parent_rule_map: &HashMap<String, Vec<String>>) -> usize {
+    fn search(parents: &HashMap<String, Vec<String>>, colors: &mut HashSet<String>, color: &str) {
+        if let Some(parent_bags) = parents.get(color) {
+            for parent_bag in parent_bags {
+                colors.insert(parent_bag.clone());
+                search(parents, colors, parent_bag);
+            }
+        }
+    }
+
+    let mut colors = HashSet::new();
+    search(parent_rule_map, &mut colors, color);
+    colors.len()
+}
+
+fn n_bags_required_inside(
+    color: &str,
+    child_rule_map: &HashMap<String, Vec<(String, usize)>>,
+) -> usize {
+    child_rule_map.get(color).map_or(0, |children| {
+        children.iter().fold(0, |result, (color, count)| {
+            result + count + count * n_bags_required_inside(color, &child_rule_map)
+        })
+    })
+}
+
+fn string_split2(pattern: &str, string: &str) -> (String, String) {
+    let parts = string.split(pattern).collect::<Vec<&str>>();
+    (parts[0].to_string(), parts[1].to_string())
+}
+
 fn main() {
     let input = include_str!("./2020-7.txt");
     let mut parent_rule_map: HashMap<String, Vec<String>> = HashMap::new();
     let mut child_rule_map: HashMap<String, Vec<(String, usize)>> = HashMap::new();
 
-    input
-        .trim()
-        .lines()
-        .for_each(|line| {
-            let parts = line.trim().split(" bags contain ").collect::<Vec<&str>>();
-            let name = parts[0].trim().to_string();
+    input.trim().lines().for_each(|line| {
+        let (bag_color, bag_contents) = string_split2(" bags contain ", line.trim());
 
-            let child_rules = child_rule_map.entry(name.clone()).or_insert(vec![]);
+        let child_rules = child_rule_map.entry(bag_color.clone()).or_insert(vec![]);
+        if !bag_contents.contains("no other bags") {
+            let re = Regex::new(r"(\d+)(.+?)bags?").unwrap();
+            for cap in re.captures_iter(&bag_contents) {
+                let child_name = (&cap[2]).trim().to_string();
+                let child_count = cap[1].parse::<usize>().unwrap();
+                child_rules.push((child_name.clone(), child_count));
 
-            let contents = parts[1].trim();
-            if !contents.contains("no other bags") {
-                let re = Regex::new(r"(\d+)(.+?)bags?").unwrap();
-                for cap in re.captures_iter(contents) {
-                    let child_name = (&cap[2]).trim().to_string();
-                    let child_count = cap[1].parse::<usize>().unwrap();
-                    child_rules.push((child_name.clone(), child_count));
-                    let parent_rules = parent_rule_map.entry(child_name).or_insert(vec![]);
-                    parent_rules.push(name.clone());
-                }
-            }
-        });
-
-    let mut parents = HashSet::new();
-    fn search(parent_rule_map: &HashMap<String, Vec<String>>, set: &mut HashSet<String>, bag: String) {
-        if let Some(parent_bags) = parent_rule_map.get(&bag) {
-            for parent_bag in parent_bags {
-                set.insert(parent_bag.clone());
-                search(parent_rule_map, set, parent_bag.clone());
+                let parent_rules = parent_rule_map.entry(child_name).or_insert(vec![]);
+                parent_rules.push(bag_color.clone());
             }
         }
-    }
-    search(&parent_rule_map, &mut parents, "shiny gold".to_string());
+    });
 
-    aoc_lib::set_part_1!(parents.len());
-
-    fn search2(child_rule_map: &HashMap<String, Vec<(String, usize)>>, bag: String) -> usize {
-        let mut total_bags = 0;
-        if let Some(children) = child_rule_map.get(&bag) {
-            for (child_bag, count) in children {
-                total_bags += count + count * search2(child_rule_map, child_bag.clone());
-            }
-        }
-
-        total_bags
-    }
-
-    aoc_lib::set_part_2!(search2(&child_rule_map, "shiny gold".to_string()));
+    aoc_lib::set_part_1!(n_bag_colors_containing("shiny gold", &parent_rule_map));
+    aoc_lib::set_part_2!(n_bags_required_inside("shiny gold", &child_rule_map));
 }

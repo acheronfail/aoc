@@ -109,7 +109,7 @@ fn n_bags_required_inside(
     })
 }
 
-fn string_split2(pattern: &str, string: &str) -> (String, String) {
+pub fn string_split2(pattern: &str, string: &str) -> (String, String) {
     let parts = string.split(pattern).collect::<Vec<&str>>();
     (parts[0].to_string(), parts[1].to_string())
 }

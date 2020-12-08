@@ -70,7 +70,7 @@ async fn run_loop(
     }
 
     // prompt to submit answers
-    let answer = prompt_from_stdin(Some("Submit answers? [Y/n/q]: "))?;
+    let answer = prompt_from_stdin(Some("Submit answers? [Y]es/[q]uit/[c]ontinue: "))?;
     match answer.as_str() {
         "" | "y" | "yes" | "Y" | "YES" => {
             if aoc_lib::aoc::is_part_1_complete(year, day)? {

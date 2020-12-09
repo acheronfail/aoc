@@ -13,15 +13,18 @@ macro_rules! define_aoc_macro {
                     use std::fs::OpenOptions;
                     use std::io::Write;
 
-                    println!("{}: {}", stringify!($ident), $result);
+                    let value = $result;
+                    println!("{}: {}", stringify!($ident), value);
                     OpenOptions::new()
                         .create(true)
                         .truncate(true)
                         .write(true)
                         .open(concat!("/tmp/aoc-{}", stringify!($ident)))
                         .unwrap()
-                        .write_all(format!("{}", $result).as_bytes())
+                        .write_all(format!("{}", value).as_bytes())
                         .unwrap();
+
+                        value
                 }};
             }
 

@@ -49,7 +49,8 @@ pub async fn get_description(client: &Client, year: usize, day: usize) -> Result
 
     let mut description = format!("// See: {}\n", url);
     for element in document.select(&selector) {
-        let text = html2text::from_read(&element.html().as_bytes()[..], 100);
+        // Line length = 100 - 3 (comment length)
+        let text = html2text::from_read(&element.html().as_bytes()[..], 100 - 3);
         for line in text.lines().map(|l| l.trim()) {
             if line.len() > 0 {
                 description.push_str(&format!("// {}\n", line));

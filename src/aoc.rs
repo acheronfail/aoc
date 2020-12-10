@@ -170,13 +170,15 @@ fn new_source_file(description: &str, year: usize, day: usize) -> String {
     format!(
         r#"{description}
 
-fn main() {{
-    let input = include_str!("./{year}-{day}.txt");
+use anyhow::Result;
 
-    // ...
+fn main() -> Result<()> {{
+    let input = include_str!("./{year}-{day}.txt");
 
     aoc_lib::set_part_1!(0);
     // aoc_lib::set_part_2!(0);
+    
+    Ok(())
 }}"#,
         description = description,
         year = year,

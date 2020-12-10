@@ -116,11 +116,6 @@
 // Fix the program so that it terminates normally by changing exactly one `jmp` (to `nop`) or `nop` (to
 // `jmp`). *What is the value of the accumulator after the program terminates?*
 
-#[allow(unused)]
-#[path = "./2020-7.rs"]
-mod x;
-use x::string_split2;
-
 use std::collections::HashSet;
 
 fn test(lines: Vec<&str>, part_1: bool) -> isize {
@@ -143,7 +138,7 @@ fn test(lines: Vec<&str>, part_1: bool) -> isize {
         }
 
         let line = lines[ip];
-        let (instruction, number) = string_split2(" ", line);
+        let (instruction, number) = aoc_lib::utils::string_split2(" ", line);
         let number = number.parse::<isize>().unwrap();
 
         match &instruction[..] {

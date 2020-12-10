@@ -1,6 +1,7 @@
 pub mod aoc;
 pub mod args;
 pub mod credentials;
+pub mod utils;
 
 use paste::paste;
 

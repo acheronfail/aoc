@@ -109,20 +109,18 @@ fn n_bags_required_inside(
     })
 }
 
-pub fn string_split2(pattern: &str, string: &str) -> (String, String) {
-    let parts = string.split(pattern).collect::<Vec<&str>>();
-    (parts[0].to_string(), parts[1].to_string())
-}
-
 fn main() {
     let input = include_str!("./2020-7.txt");
     let mut parent_rule_map: HashMap<String, Vec<String>> = HashMap::new();
     let mut child_rule_map: HashMap<String, Vec<(String, usize)>> = HashMap::new();
 
     input.trim().lines().for_each(|line| {
-        let (bag_color, bag_contents) = string_split2(" bags contain ", line.trim());
+        let (bag_color, bag_contents) =
+            aoc_lib::utils::string_split2(" bags contain ", line.trim());
 
-        let child_rules = child_rule_map.entry(bag_color.clone()).or_insert(vec![]);
+        let child_rules = child_rule_map
+            .entry(bag_color.to_string())
+            .or_insert(vec![]);
         if !bag_contents.contains("no other bags") {
             let re = Regex::new(r"(\d+)(.+?)bags?").unwrap();
             for cap in re.captures_iter(&bag_contents) {
@@ -131,7 +129,7 @@ fn main() {
                 child_rules.push((child_name.clone(), child_count));
 
                 let parent_rules = parent_rule_map.entry(child_name).or_insert(vec![]);
-                parent_rules.push(bag_color.clone());
+                parent_rules.push(bag_color.to_string());
             }
         }
     });

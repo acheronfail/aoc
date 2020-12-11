@@ -70,9 +70,10 @@ async fn run_loop(
     }
 
     // prompt to submit answers
-    let answer = prompt_from_stdin(Some("Submit answers? [Y]es/[q]uit/[c]ontinue: "))?;
+    let answer = prompt_from_stdin(Some("Submit answers? [1]/[2]/[q]uit: "))?;
     match answer.as_str() {
-        "" | "y" | "yes" | "Y" | "YES" => {
+        "" => {
+            println!("No input given, auto-submitting...");
             if aoc_lib::aoc::is_part_1_complete(year, day)? {
                 if aoc_lib::submit_part_2!(&client, year, day) {
                     Ok(Action::Quit)
@@ -81,6 +82,17 @@ async fn run_loop(
                 }
             } else {
                 aoc_lib::submit_part_1!(&client, year, day);
+                Ok(Action::Continue)
+            }
+        }
+        "1" => {
+            aoc_lib::submit_part_1!(&client, year, day);
+            Ok(Action::Continue)
+        }
+        "2" => {
+            if aoc_lib::submit_part_2!(&client, year, day) {
+                Ok(Action::Quit)
+            } else {
                 Ok(Action::Continue)
             }
         }

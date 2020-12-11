@@ -44,11 +44,11 @@ pub enum OpCode {
     },
     JumpIfTrue {
         test: IntCode,
-        value: IntCode,
+        destination: IntCode,
     },
     JumpIfFalse {
         test: IntCode,
-        value: IntCode,
+        destination: IntCode,
     },
     LessThan {
         lhs: IntCode,
@@ -64,7 +64,7 @@ pub enum OpCode {
 }
 
 impl OpCode {
-    pub fn read(ip: &mut usize, slice: &[isize]) -> Result<OpCode> {
+    pub fn next(ip: &mut usize, slice: &[isize]) -> Result<OpCode> {
         let start_ip = *ip;
         let instruction = slice[*ip];
         *ip += 1;
@@ -105,11 +105,11 @@ impl OpCode {
             },
             5 => OpCode::JumpIfTrue {
                 test: next_int_code()?,
-                value: next_int_code()?,
+                destination: next_int_code()?,
             },
             6 => OpCode::JumpIfFalse {
                 test: next_int_code()?,
-                value: next_int_code()?,
+                destination: next_int_code()?,
             },
             7 => OpCode::LessThan {
                 lhs: next_int_code()?,
@@ -169,7 +169,7 @@ impl<'a> Program<'a> {
     }
 
     pub fn run(&mut self) {
-        while let Ok(op_code) = OpCode::read(&mut self.ip, &self.memory) {
+        while let Ok(op_code) = OpCode::next(&mut self.ip, &self.memory) {
             match op_code {
                 OpCode::Add { lhs, rhs, target } => {
                     self.memory[*target.as_position().unwrap()] =
@@ -188,14 +188,14 @@ impl<'a> Program<'a> {
                         break;
                     }
                 }
-                OpCode::JumpIfTrue { test, value } => {
+                OpCode::JumpIfTrue { test, destination } => {
                     if test.as_value(&self.memory) != 0 {
-                        self.ip = value.as_value(&self.memory) as usize;
+                        self.ip = destination.as_value(&self.memory) as usize;
                     }
                 }
-                OpCode::JumpIfFalse { test, value } => {
+                OpCode::JumpIfFalse { test, destination } => {
                     if test.as_value(&self.memory) == 0 {
-                        self.ip = value.as_value(&self.memory) as usize;
+                        self.ip = destination.as_value(&self.memory) as usize;
                     }
                 }
                 OpCode::LessThan { lhs, rhs, target } => {

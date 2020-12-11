@@ -162,20 +162,20 @@ fn main() {
     let input = include_str!("./2020-8.txt").trim();
     let lines = input.lines().collect::<Vec<&str>>();
 
-    let l = lines.clone();
-    for (i, line) in l.iter().enumerate() {
+    for (i, line) in lines.iter().enumerate() {
         if line.starts_with("acc") {
             continue;
         }
 
-        let mut ll = l.clone();
+        let mut patched_lines = lines.clone();
         let patch = if line.starts_with("jmp") {
             line.replace("jmp", "nop")
         } else {
             line.replace("nop", "jmp")
         };
-        ll[i] = patch.as_str();
-        test(ll, false);
+        patched_lines[i] = patch.as_str();
+
+        test(patched_lines, false);
     }
 
     test(lines, true);

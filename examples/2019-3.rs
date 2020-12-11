@@ -109,7 +109,7 @@ fn all_points(line: &str) -> HashMap<(isize, isize), usize> {
     let mut x = 0;
     let mut y = 0;
     let mut length = 0;
-    let mut set = HashMap::new();
+    let mut map = HashMap::new();
     line.split(',').for_each(|movement| unsafe {
         let count = movement.get_unchecked(1..).parse::<isize>().unwrap();
         for _ in 0..count {
@@ -121,11 +121,11 @@ fn all_points(line: &str) -> HashMap<(isize, isize), usize> {
                 _ => unreachable!(),
             }
             length += 1;
-            set.insert((x, y), length);
+            map.insert((x, y), length);
         }
     });
 
-    set
+    map
 }
 
 fn main() -> Result<()> {

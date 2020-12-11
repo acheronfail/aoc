@@ -74,7 +74,7 @@ impl OpCode {
             let int_code = slice
                 .get(*ip)
                 .map(|x| {
-                    if digit_at(instruction as usize, (*ip - start_ip) as u32 + 1) == 1 {
+                    if aoc_lib::utils::digit_at(instruction as usize, (*ip - start_ip) + 1) == 1 {
                         IntCode::Immediate(*x)
                     } else {
                         IntCode::Position(*x as usize)
@@ -218,9 +218,4 @@ impl<'a> Program<'a> {
             }
         }
     }
-}
-
-#[inline]
-fn digit_at(input: usize, pos: u32) -> usize {
-    (input / 10_usize.pow(pos)) % 10
 }

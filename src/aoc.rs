@@ -83,17 +83,18 @@ pub async fn submit_answer(
         .error_for_status()?;
 
     if res.status().is_success() {
-        let text = res.text().await?;
-        if text.contains("That's the right answer") {
+        let html = res.text().await?;
+        if html.contains("That's the right answer") {
             println!("Correct answer! 😁");
             Ok(true)
         } else {
-            println!("Incorrect answer!");
-            if text.contains("your answer is too high") {
-                println!("Your answer is too high!");
-            }
-            if text.contains("your answer is too low") {
-                println!("Your answer is too low!");
+            let document = Html::parse_document(&html);
+            let selector = Selector::parse(r#"main"#).expect("failed to init html selector");
+
+            println!("Uh oh! Either your answer was incorrect or there was an issue submitting.");
+            if let Some(main) = document.select(&selector).next() {
+                let text = html2text::from_read(&main.html().as_bytes()[..], 80);
+                println!("---\n{}---", text);
             }
 
             Ok(false)
@@ -174,7 +175,7 @@ fn new_source_file(description: &str, year: usize, day: usize) -> String {
 use anyhow::Result;
 
 fn main() -> Result<()> {{
-    let input = include_str!("./{year}-{day}.txt");
+    let input = include_str!("./{year}-{day}.txt").trim();
 
     aoc_lib::set_part_1!(0);
     // aoc_lib::set_part_2!(0);

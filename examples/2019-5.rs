@@ -168,43 +168,17 @@ fn main() -> Result<()> {
 
     {
         let mut program = Program::new(int_codes.clone());
-        let mut diagnostic_code = 0;
-        let mut handle_output = |x| {
-            diagnostic_code = x;
-            // stop at the first non-zero
-            x != 0
-        };
-
-        program.set_handle_input(&|| 1);
-        program.set_handle_output(&mut handle_output);
-        program.run();
-        let ip = program.get_ip();
-        let memory = program.get_memory();
-        let next_instruction = memory[ip];
-        if next_instruction == 99 {
-            aoc_lib::set_part_1!(diagnostic_code);
+        let output = program.run(vec![1]);
+        if program.get_memory()[program.get_ip() - 1] == 99 {
+            aoc_lib::set_part_1!(output.last().unwrap());
         }
     }
 
-    // part 2
-
     {
         let mut program = Program::new(int_codes.clone());
-        let mut diagnostic_code = 0;
-        let mut handle_output = |x| {
-            diagnostic_code = x;
-            // stop at the first non-zero
-            x != 0
-        };
-
-        program.set_handle_input(&|| 5);
-        program.set_handle_output(&mut handle_output);
-        program.run();
-        let ip = program.get_ip();
-        let memory = program.get_memory();
-        let next_instruction = memory[ip];
-        if next_instruction == 99 {
-            aoc_lib::set_part_2!(diagnostic_code);
+        let output = program.run(vec![5]);
+        if program.get_memory()[program.get_ip() - 1] == 99 {
+            aoc_lib::set_part_2!(output.last().unwrap());
         }
     }
 

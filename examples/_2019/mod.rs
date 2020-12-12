@@ -130,21 +130,16 @@ impl OpCode {
     }
 }
 
-pub struct Program<'a> {
+pub struct Program {
     ip: usize,
     memory: Vec<isize>,
-
-    handle_input: Option<&'a dyn Fn() -> isize>,
-    handle_output: Option<&'a mut dyn FnMut(isize) -> bool>,
 }
 
-impl<'a> Program<'a> {
-    pub fn new(int_codes: Vec<isize>) -> Program<'a> {
+impl Program {
+    pub fn new(int_codes: Vec<isize>) -> Program {
         Program {
             ip: 0,
             memory: int_codes,
-            handle_input: None,
-            handle_output: None,
         }
     }
 
@@ -160,15 +155,8 @@ impl<'a> Program<'a> {
         self.memory = memory;
     }
 
-    pub fn set_handle_input(&mut self, f: &'a dyn Fn() -> isize) {
-        self.handle_input = Some(f);
-    }
-
-    pub fn set_handle_output(&mut self, f: &'a mut dyn FnMut(isize) -> bool) {
-        self.handle_output = Some(f);
-    }
-
-    pub fn run(&mut self) {
+    pub fn run(&mut self, mut input: Vec<isize>) -> Vec<isize> {
+        let mut output = vec![];
         while let Ok(op_code) = OpCode::next(&mut self.ip, &self.memory) {
             match op_code {
                 OpCode::Add { lhs, rhs, target } => {
@@ -180,14 +168,9 @@ impl<'a> Program<'a> {
                         lhs.as_value(&self.memory) * rhs.as_value(&self.memory);
                 }
                 OpCode::Input { target } => {
-                    self.memory[*target.as_position().unwrap()] =
-                        (self.handle_input.as_ref().unwrap())()
+                    self.memory[*target.as_position().unwrap()] = input.pop().unwrap()
                 }
-                OpCode::Output { target } => {
-                    if (self.handle_output.as_mut().unwrap())(target.as_value(&self.memory)) {
-                        break;
-                    }
-                }
+                OpCode::Output { target } => output.push(target.as_value(&self.memory)),
                 OpCode::JumpIfTrue { test, destination } => {
                     if test.as_value(&self.memory) != 0 {
                         self.ip = destination.as_value(&self.memory) as usize;
@@ -217,5 +200,7 @@ impl<'a> Program<'a> {
                 OpCode::Halt => break,
             }
         }
+
+        output
     }
 }

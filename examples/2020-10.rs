@@ -175,7 +175,10 @@ use std::collections::HashMap;
 
 fn main() {
     let input = include_str!("./2020-10.txt").trim();
-    let mut adapters = input.lines().map(|line| line.parse::<usize>().unwrap()).collect::<Vec<usize>>();
+    let mut adapters = input
+        .lines()
+        .map(|line| line.parse::<usize>().unwrap())
+        .collect::<Vec<usize>>();
 
     adapters.sort();
     adapters.insert(0, 0);

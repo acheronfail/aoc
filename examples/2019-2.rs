@@ -143,7 +143,7 @@ fn main() {
     memory[1] = 12;
     memory[2] = 2;
     program.set_memory(memory);
-    program.run();
+    program.run(vec![]);
     aoc_lib::set_part_1!(program.get_memory()[0]);
 
     let target = 19690720;
@@ -153,7 +153,7 @@ fn main() {
             memory[1] = n;
             memory[2] = v;
             let mut program = Program::new(memory);
-            program.run();
+            program.run(vec![]);
             if program.get_memory()[0] == target {
                 aoc_lib::set_part_2!(100 * n + v);
                 break;

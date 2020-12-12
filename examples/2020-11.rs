@@ -252,7 +252,7 @@ fn step1(lines: Vec<Vec<char>>) -> Vec<Vec<char>> {
                 .iter()
                 .enumerate()
                 .map(|(j, seat)| {
-                    let n_adjacent = |ch: char| -> usize {
+                    let occupied_seats = || -> usize {
                         let mut n = 0;
 
                         let k_start = if i == 0 { 0 } else { i - 1 };
@@ -265,7 +265,7 @@ fn step1(lines: Vec<Vec<char>>) -> Vec<Vec<char>> {
                                     continue;
                                 }
 
-                                if lines[k][l] == ch {
+                                if lines[k][l] == '#' {
                                     n += 1;
                                 }
                             }
@@ -274,22 +274,27 @@ fn step1(lines: Vec<Vec<char>>) -> Vec<Vec<char>> {
                         n
                     };
 
-                    if *seat == 'L' {
-                        if n_adjacent('#') == 0 {
-                            return '#';
-                        }
-                    } else if *seat == '#' {
-                        if n_adjacent('#') >= 4 {
-                            return 'L';
-                        }
+                    match seat {
+                        'L' if occupied_seats() == 0 => '#',
+                        '#' if occupied_seats() >= 4 => 'L',
+                        _ => *seat,
                     }
-
-                    *seat
                 })
                 .collect::<Vec<char>>()
         })
         .collect::<Vec<Vec<char>>>()
 }
+
+const DIRECTIONS: [(isize, isize); 8] = [
+    (-1, 0),  // l
+    (-1, -1), // lu
+    (0, -1),  // u
+    (1, -1),  // ru
+    (1, 0),   // r
+    (1, 1),   // rd
+    (0, 1),   // d
+    (-1, 1),  // dl
+];
 
 fn step2(lines: Vec<Vec<char>>) -> Vec<Vec<char>> {
     lines
@@ -300,178 +305,70 @@ fn step2(lines: Vec<Vec<char>>) -> Vec<Vec<char>> {
                 .iter()
                 .enumerate()
                 .map(|(j, seat)| {
-                    let n_adjacent =
-                        |ch: char| -> usize {
-                            let mut n = 0;
-
-                            // chars_left =
-                            if (0..j).rev().find_map(|x| {
-                                let c = lines[i][x];
-                                if c != '.' {
-                                    Some(c)
-                                } else {
-                                    None
+                    let occupied_seats = || -> usize {
+                        let mut n = 0;
+                        let line_range = 0..(lines.len() as isize);
+                        let char_range = 0..(chars.len() as isize);
+                        for (dx, dy) in &DIRECTIONS {
+                            let (mut x, mut y) = (i as isize, j as isize);
+                            loop {
+                                x += dx;
+                                y += dy;
+                                if !line_range.contains(&x) || !char_range.contains(&y) {
+                                    break;
                                 }
-                            }) == Some(ch)
-                            {
-                                n += 1
-                            }
-                            // chars_right =
-                            if ((j + 1)..chars.len()).find_map(|x| {
-                                let c = lines[i][x];
-                                if c != '.' {
-                                    Some(c)
-                                } else {
-                                    None
+
+                                match lines[x as usize][y as usize] {
+                                    '.' => continue,
+                                    c => {
+                                        if c == '#' {
+                                            n += 1;
+                                        }
+
+                                        break;
+                                    }
                                 }
-                            }) == Some(ch)
-                            {
-                                n += 1
                             }
-                            // chars_up =
-                            if (0..i).rev().find_map(|x| {
-                                let c = lines[x][j];
-                                if c != '.' {
-                                    Some(c)
-                                } else {
-                                    None
-                                }
-                            }) == Some(ch)
-                            {
-                                n += 1
-                            }
-                            // chars_down =
-                            if ((i + 1)..lines.len()).find_map(|x| {
-                                let c = lines[x][j];
-                                if c != '.' {
-                                    Some(c)
-                                } else {
-                                    None
-                                }
-                            }) == Some(ch)
-                            {
-                                n += 1
-                            }
-
-                            // chars left & up
-                            if (0..j)
-                                .rev()
-                                .zip((0..i).rev())
-                                .into_iter()
-                                .find_map(|(j, i)| {
-                                    let c = lines[i][j];
-                                    if c != '.' {
-                                        Some(c)
-                                    } else {
-                                        None
-                                    }
-                                })
-                                == Some(ch)
-                            {
-                                n += 1;
-                            }
-
-                            // chars right & up
-                            if ((j + 1)..chars.len())
-                                .zip((0..i).rev())
-                                .into_iter()
-                                .find_map(|(j, i)| {
-                                    let c = lines[i][j];
-                                    if c != '.' {
-                                        Some(c)
-                                    } else {
-                                        None
-                                    }
-                                })
-                                == Some(ch)
-                            {
-                                n += 1;
-                            }
-
-                            // chars left & down
-                            if (0..j).rev().zip((i + 1)..lines.len()).into_iter().find_map(
-                                |(j, i)| {
-                                    let c = lines[i][j];
-                                    if c != '.' {
-                                        Some(c)
-                                    } else {
-                                        None
-                                    }
-                                },
-                            ) == Some(ch)
-                            {
-                                n += 1;
-                            }
-
-                            // chars right & down
-                            if ((j + 1)..chars.len())
-                                .zip((i + 1)..lines.len())
-                                .into_iter()
-                                .find_map(|(j, i)| {
-                                    let c = lines[i][j];
-                                    if c != '.' {
-                                        Some(c)
-                                    } else {
-                                        None
-                                    }
-                                })
-                                == Some(ch)
-                            {
-                                n += 1;
-                            }
-
-                            n
-                        };
-
-                    if *seat == 'L' {
-                        if n_adjacent('#') == 0 {
-                            return '#';
                         }
-                    } else if *seat == '#' {
-                        if n_adjacent('#') >= 5 {
-                            return 'L';
-                        }
+
+                        n
+                    };
+
+                    match seat {
+                        'L' if occupied_seats() == 0 => '#',
+                        '#' if occupied_seats() >= 5 => 'L',
+                        _ => *seat,
                     }
-
-                    *seat
                 })
                 .collect::<Vec<char>>()
         })
         .collect::<Vec<Vec<char>>>()
 }
 
+fn n_seats_once_stable(
+    mut lines: Vec<Vec<char>>,
+    f: fn(Vec<Vec<char>>) -> Vec<Vec<char>>,
+) -> usize {
+    let mut prev = None;
+    while prev.is_none() || &lines != prev.as_ref().unwrap() {
+        prev = Some(lines.clone());
+        lines = f(lines);
+    }
+
+    lines.iter().fold(0, |count, chars| {
+        chars.iter().filter(|ch| **ch == '#').count() + count
+    })
+}
+
 fn main() -> Result<()> {
     let input = include_str!("./2020-11.txt").trim();
-
     let lines = input
         .lines()
         .map(|s| s.chars().collect::<Vec<char>>())
         .collect::<Vec<Vec<char>>>();
-    let mut prev_1 = None;
-    let mut current_1 = lines.clone();
-    let mut prev_2 = None;
-    let mut current_2 = lines;
-    loop {
-        if prev_1.is_none() || &current_1 != prev_1.as_ref().unwrap() {
-            prev_1 = Some(current_1.clone());
-            current_1 = step1(current_1);
-        }
-        if prev_2.is_none() || &current_2 != prev_2.as_ref().unwrap() {
-            prev_2 = Some(current_2.clone());
-            current_2 = step2(current_2);
-        }
 
-        if &current_1 == prev_1.as_ref().unwrap() && &current_2 == prev_2.as_ref().unwrap() {
-            break;
-        }
-    }
-
-    aoc_lib::set_part_1!(current_1.iter().fold(0, |result, chars| {
-        chars.iter().filter(|ch| **ch == '#').count() + result
-    }));
-    aoc_lib::set_part_2!(current_2.iter().fold(0, |result, chars| {
-        chars.iter().filter(|ch| **ch == '#').count() + result
-    }));
+    aoc_lib::set_part_1!(n_seats_once_stable(lines.clone(), step1));
+    aoc_lib::set_part_2!(n_seats_once_stable(lines.clone(), step2));
 
     Ok(())
 }

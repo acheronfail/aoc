@@ -155,30 +155,27 @@
 // [1] https://en.wikipedia.org/wiki/Spacecraft_thermal_control
 
 mod _2019;
-use _2019::Program;
+use _2019::{int_codes_from_str, Program, StopReason};
 
 use anyhow::Result;
 
 fn main() -> Result<()> {
     let input = include_str!("./2019-5.txt").trim();
-    let int_codes = input
-        .split(',')
-        .map(|n| n.trim().parse::<isize>().unwrap())
-        .collect::<Vec<isize>>();
+    let int_codes = int_codes_from_str(input);
 
     {
         let mut program = Program::new(int_codes.clone());
-        let output = program.run(vec![1]);
-        if program.get_memory()[program.get_ip() - 1] == 99 {
+        let mut output = vec![];
+        if program.run(&mut vec![1], &mut output) == StopReason::Halt {
             aoc_lib::set_part_1!(output.last().unwrap());
         }
     }
 
     {
         let mut program = Program::new(int_codes.clone());
-        let output = program.run(vec![5]);
-        if program.get_memory()[program.get_ip() - 1] == 99 {
-            aoc_lib::set_part_2!(output.last().unwrap());
+        let mut output = vec![];
+        if program.run(&mut vec![5], &mut output) == StopReason::Halt {
+            aoc_lib::set_part_1!(output.last().unwrap());
         }
     }
 

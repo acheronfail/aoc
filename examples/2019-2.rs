@@ -135,15 +135,15 @@ fn main() {
     let input = include_str!("./2019-2.txt").trim();
     let int_codes = input
         .split(',')
-        .map(|n| n.trim().parse::<isize>().unwrap())
-        .collect::<Vec<isize>>();
+        .map(|n| n.trim().parse::<i64>().unwrap())
+        .collect::<Vec<i64>>();
 
     let mut program = Program::new(int_codes.clone());
     let mut memory = program.get_memory();
     memory[1] = 12;
     memory[2] = 2;
     program.set_memory(memory);
-    program.run(vec![]);
+    program.run_no_io();
     aoc_lib::set_part_1!(program.get_memory()[0]);
 
     let target = 19690720;
@@ -153,7 +153,7 @@ fn main() {
             memory[1] = n;
             memory[2] = v;
             let mut program = Program::new(memory);
-            program.run(vec![]);
+            program.run_no_io();
             if program.get_memory()[0] == target {
                 aoc_lib::set_part_2!(100 * n + v);
                 break;

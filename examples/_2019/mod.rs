@@ -1,15 +1,45 @@
 #![allow(unused)]
 
 use anyhow::{anyhow, Result};
+use std::io::{Read, Write};
+
+pub fn int_codes_from_str(s: &str) -> Vec<i64> {
+    s.split(',')
+        .map(|n| n.trim().parse::<i64>().unwrap())
+        .collect::<Vec<i64>>()
+}
+
+pub trait IntRead {
+    fn read(&mut self) -> Option<i64>;
+}
+
+impl IntRead for &mut Vec<i64> {
+    fn read(&mut self) -> Option<i64> {
+        match self.len() {
+            0 => None,
+            _ => Some(self.remove(0)),
+        }
+    }
+}
+
+pub trait IntWrite {
+    fn write(&mut self, value: i64);
+}
+
+impl IntWrite for &mut Vec<i64> {
+    fn write(&mut self, value: i64) {
+        self.push(value);
+    }
+}
 
 #[derive(Debug, Copy, Clone)]
 pub enum IntCode {
     Position(usize),
-    Immediate(isize),
+    Immediate(i64),
 }
 
 impl IntCode {
-    pub fn as_value(&self, memory: &[isize]) -> isize {
+    pub fn as_value(&self, memory: &[i64]) -> i64 {
         match self {
             IntCode::Immediate(x) => *x,
             IntCode::Position(i) => memory[*i],
@@ -64,7 +94,21 @@ pub enum OpCode {
 }
 
 impl OpCode {
-    pub fn next(ip: &mut usize, slice: &[isize]) -> Result<OpCode> {
+    pub fn len(&self) -> usize {
+        match self {
+            OpCode::Add { .. } => 4,
+            OpCode::Mult { .. } => 4,
+            OpCode::Input { .. } => 2,
+            OpCode::Output { .. } => 2,
+            OpCode::JumpIfTrue { .. } => 3,
+            OpCode::JumpIfFalse { .. } => 4,
+            OpCode::LessThan { .. } => 4,
+            OpCode::Equals { .. } => 4,
+            OpCode::Halt => 1,
+        }
+    }
+
+    pub fn next(ip: &mut usize, slice: &[i64]) -> Result<OpCode> {
         let start_ip = *ip;
         let instruction = slice[*ip];
         *ip += 1;
@@ -130,13 +174,19 @@ impl OpCode {
     }
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum StopReason {
+    Halt,
+    WaitingForInput,
+}
+
 pub struct Program {
     ip: usize,
-    memory: Vec<isize>,
+    memory: Vec<i64>,
 }
 
 impl Program {
-    pub fn new(int_codes: Vec<isize>) -> Program {
+    pub fn new(int_codes: Vec<i64>) -> Program {
         Program {
             ip: 0,
             memory: int_codes,
@@ -147,16 +197,23 @@ impl Program {
         self.ip
     }
 
-    pub fn get_memory(&self) -> Vec<isize> {
+    pub fn get_memory(&self) -> Vec<i64> {
         self.memory.clone()
     }
 
-    pub fn set_memory(&mut self, memory: Vec<isize>) {
+    pub fn set_memory(&mut self, memory: Vec<i64>) {
         self.memory = memory;
     }
 
-    pub fn run(&mut self, mut input: Vec<isize>) -> Vec<isize> {
-        let mut output = vec![];
+    pub fn run_no_io(&mut self) -> StopReason {
+        self.run(&mut vec![], &mut vec![])
+    }
+
+    pub fn run<R, W>(&mut self, mut input: R, mut output: W) -> StopReason
+    where
+        R: IntRead,
+        W: IntWrite,
+    {
         while let Ok(op_code) = OpCode::next(&mut self.ip, &self.memory) {
             match op_code {
                 OpCode::Add { lhs, rhs, target } => {
@@ -167,10 +224,14 @@ impl Program {
                     self.memory[*target.as_position().unwrap()] =
                         lhs.as_value(&self.memory) * rhs.as_value(&self.memory);
                 }
-                OpCode::Input { target } => {
-                    self.memory[*target.as_position().unwrap()] = input.pop().unwrap()
-                }
-                OpCode::Output { target } => output.push(target.as_value(&self.memory)),
+                OpCode::Input { target } => match input.read() {
+                    Some(x) => self.memory[*target.as_position().unwrap()] = x,
+                    None => {
+                        self.ip -= op_code.len();
+                        return StopReason::WaitingForInput;
+                    }
+                },
+                OpCode::Output { target } => output.write(target.as_value(&self.memory)),
                 OpCode::JumpIfTrue { test, destination } => {
                     if test.as_value(&self.memory) != 0 {
                         self.ip = destination.as_value(&self.memory) as usize;
@@ -197,10 +258,10 @@ impl Program {
                             0
                         }
                 }
-                OpCode::Halt => break,
+                OpCode::Halt => return StopReason::Halt,
             }
         }
 
-        output
+        unreachable!()
     }
 }

@@ -94,7 +94,7 @@ pub async fn submit_answer(
             println!("Uh oh! Either your answer was incorrect or there was an issue submitting.");
             if let Some(main) = document.select(&selector).next() {
                 let text = html2text::from_read(&main.html().as_bytes()[..], 80);
-                println!("---\n{}---", text);
+                println!("---\n{}\n---", text.trim());
             }
 
             Ok(false)

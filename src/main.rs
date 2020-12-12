@@ -11,6 +11,7 @@ use reqwest::Client;
 
 enum Action {
     Continue,
+    Prompt,
     Quit,
 }
 
@@ -78,22 +79,28 @@ async fn run_loop(
                 if aoc_lib::submit_part_2!(&client, year, day) {
                     Ok(Action::Quit)
                 } else {
-                    Ok(Action::Continue)
+                    Ok(Action::Prompt)
                 }
             } else {
-                aoc_lib::submit_part_1!(&client, year, day);
-                Ok(Action::Continue)
+                if aoc_lib::submit_part_1!(&client, year, day) {
+                    Ok(Action::Continue)
+                } else {
+                    Ok(Action::Prompt)
+                }
             }
         }
         "1" => {
-            aoc_lib::submit_part_1!(&client, year, day);
-            Ok(Action::Continue)
+            if aoc_lib::submit_part_1!(&client, year, day) {
+                Ok(Action::Continue)
+            } else {
+                Ok(Action::Prompt)
+            }
         }
         "2" => {
             if aoc_lib::submit_part_2!(&client, year, day) {
                 Ok(Action::Quit)
             } else {
-                Ok(Action::Continue)
+                Ok(Action::Prompt)
             }
         }
         "q" | "Q" | "quit" | "QUIT" => Ok(Action::Quit),
@@ -107,11 +114,15 @@ async fn main() -> Result<()> {
     let client = aoc_lib::aoc::get_client()?;
 
     let running = Arc::new(AtomicBool::new(true));
-    while matches!(
-        run_loop(&client, args.year, args.day, &running).await?,
-        Action::Continue
-    ) {
-        running.store(true, Ordering::SeqCst);
+    loop {
+        match run_loop(&client, args.year, args.day, &running).await? {
+            Action::Continue => running.store(true, Ordering::SeqCst),
+            Action::Prompt => {
+                running.store(true, Ordering::SeqCst);
+                prompt_from_stdin(Some("Press Enter to continue..."))?;
+            }
+            Action::Quit => break,
+        }
     }
 
     Ok(())

@@ -129,20 +129,16 @@
 // is `100 * noun + verb`?* (For example, if `noun=12` and `verb=2`, the answer would be `1202`.)
 
 mod _2019;
-use _2019::Program;
+use _2019::{ints_from_str, Program};
 
 fn main() {
     let input = include_str!("./2019-2.txt").trim();
-    let int_codes = input
-        .split(',')
-        .map(|n| n.trim().parse::<i64>().unwrap())
-        .collect::<Vec<i64>>();
+    let int_codes = ints_from_str(input);
 
-    let mut program = Program::new(int_codes.clone());
-    let mut memory = program.get_memory();
+    let mut memory = int_codes.clone();
     memory[1] = 12;
     memory[2] = 2;
-    program.set_memory(memory);
+    let mut program = Program::new(memory);
     program.run_no_io();
     aoc_lib::set_part_1!(program.get_memory()[0]);
 

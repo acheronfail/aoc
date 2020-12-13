@@ -132,14 +132,14 @@
 // highest signal that can be sent to the thrusters?*
 
 mod _2019;
-use _2019::{int_codes_from_str, Program, StopReason};
+use _2019::{ints_from_str, Program, StopReason};
 
 use anyhow::Result;
 use itertools::Itertools;
 
 fn main() -> Result<()> {
     let input = include_str!("./2019-7.txt").trim();
-    let int_codes = int_codes_from_str(input);
+    let int_codes = ints_from_str(input);
 
     let highest_signal = (0..5).permutations(5).fold(0, |result, mut combination| {
         let mut a = Program::new(int_codes.clone());

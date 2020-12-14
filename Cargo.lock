@@ -26,6 +26,7 @@ dependencies = [
  "html2text",
  "itertools",
  "keytar",
+ "lazy_static",
  "paste",
  "regex",
  "reqwest",

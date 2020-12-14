@@ -1,5 +1,5 @@
+use super::io::{IntRead, IntWrite};
 use super::op_code::OpCode;
-use super::traits::{IntRead, IntWrite};
 use super::Int;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

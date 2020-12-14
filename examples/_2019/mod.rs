@@ -4,15 +4,15 @@ use anyhow::{anyhow, Result};
 use std::io::{Read, Write};
 
 pub mod int_code;
+pub mod io;
 pub mod op_code;
 pub mod program;
-pub mod traits;
 
 pub use program::{Program, StopReason};
 
 use int_code::IntCode;
+use io::{IntRead, IntWrite};
 use op_code::OpCode;
-use traits::{IntRead, IntWrite};
 
 pub type Int = i64;
 

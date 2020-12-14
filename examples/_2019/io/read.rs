@@ -1,4 +1,6 @@
-use super::Int;
+use std::sync::{Arc, Mutex};
+
+use crate::_2019::Int;
 
 pub trait IntRead {
     fn int_read(&mut self) -> Option<Int>;
@@ -25,15 +27,5 @@ impl IntRead for Option<Int> {
             Some(int) => int.int_read(),
             None => None,
         }
-    }
-}
-
-pub trait IntWrite {
-    fn int_write(&mut self, value: Int);
-}
-
-impl IntWrite for &mut Vec<Int> {
-    fn int_write(&mut self, value: Int) {
-        self.push(value);
     }
 }

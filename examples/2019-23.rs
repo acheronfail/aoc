@@ -77,7 +77,6 @@ use _2019::{ints_from_str, Int, Program};
 
 lazy_static! {
     static ref PART_1_COMPLETE: AtomicBool = AtomicBool::new(false);
-    static ref PART_2_COMPLETE: AtomicBool = AtomicBool::new(false);
     static ref PART_2_SEEN: Mutex<HashSet<Int>> = Mutex::new(HashSet::new());
 }
 
@@ -106,11 +105,11 @@ impl NAT {
 
             // send resume packet
             if is_idle {
-                if !PART_2_COMPLETE.load(Ordering::SeqCst) {
+                {
                     let mut set = PART_2_SEEN.lock().unwrap();
                     if set.contains(&y) {
                         aoc_lib::set_part_2!(y);
-                        PART_2_COMPLETE.store(true, Ordering::SeqCst);
+                        std::process::exit(0);
                     } else {
                         set.insert(y);
                     }

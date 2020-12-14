@@ -19,6 +19,15 @@ impl IntRead for Int {
     }
 }
 
+impl IntRead for Option<Int> {
+    fn int_read(&mut self) -> Option<Int> {
+        match self {
+            Some(int) => int.int_read(),
+            None => None,
+        }
+    }
+}
+
 pub trait IntWrite {
     fn int_write(&mut self, value: Int);
 }

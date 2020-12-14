@@ -38,6 +38,9 @@ pub enum OpCode {
         rhs: IntCode,
         target: IntCode,
     },
+    AdjustRelativeBase {
+        amount: IntCode,
+    },
     Halt,
 }
 
@@ -46,7 +49,7 @@ impl OpCode {
     pub fn len(&self) -> usize {
         match self {
             OpCode::Halt => 1,
-            OpCode::Input { .. } | OpCode::Output { .. } => 2,
+            OpCode::Input { .. } | OpCode::Output { .. } | OpCode::AdjustRelativeBase { .. } => 2,
             OpCode::JumpIfTrue { .. } => 3,
             OpCode::Add { .. }
             | OpCode::Mult { .. }
@@ -67,10 +70,10 @@ impl OpCode {
             let int_code = slice
                 .get(*ip)
                 .map(|x| {
-                    if aoc_lib::utils::digit_at(instruction as usize, (*ip - start_ip) + 1) == 1 {
-                        IntCode::Immediate(*x)
-                    } else {
-                        IntCode::Position(*x as usize)
+                    match aoc_lib::utils::digit_at(instruction as usize, (*ip - start_ip) + 1) {
+                        1 => IntCode::Immediate(*x),
+                        2 => IntCode::Relative(*x),
+                        _ => IntCode::Position(*x as usize),
                     }
                 })
                 .ok_or_else(|| anyhow!("No value at position: {}", ip));
@@ -113,6 +116,9 @@ impl OpCode {
                 lhs: next_int_code()?,
                 rhs: next_int_code()?,
                 target: next_int_code()?,
+            },
+            9 => OpCode::AdjustRelativeBase {
+                amount: next_int_code()?,
             },
             99 => OpCode::Halt,
             _ => unreachable!(

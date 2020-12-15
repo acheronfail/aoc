@@ -1,4 +1,3 @@
-use std::io::{self, Write};
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -7,24 +6,13 @@ use std::time::Duration;
 
 use anyhow::Result;
 use aoc_lib::args::Args;
+use aoc_lib::utils::prompt_from_stdin;
 use reqwest::Client;
 
 enum Action {
     Continue,
     Prompt,
     Quit,
-}
-
-fn prompt_from_stdin(prompt: Option<&str>) -> Result<String> {
-    if let Some(prompt) = prompt {
-        print!("{}", prompt);
-        io::stdout().flush()?;
-    }
-
-    let mut answer = String::new();
-    io::stdin().read_line(&mut answer)?;
-
-    Ok(answer.trim().to_string())
 }
 
 async fn run_loop(

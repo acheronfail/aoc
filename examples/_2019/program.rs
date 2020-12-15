@@ -35,7 +35,7 @@ impl Program {
     }
 
     pub fn run_no_io(&mut self) -> StopReason {
-        self.run(None, &mut vec![])
+        self.run(None, &mut (vec![] as Vec<Int>))
     }
 
     pub fn run<R, W>(&mut self, mut input: R, mut output: W) -> StopReason

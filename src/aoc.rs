@@ -52,7 +52,7 @@ pub async fn get_description(client: &Client, year: usize, day: usize) -> Result
         // Line length = 100 - 3 (comment length)
         let text = html2text::from_read(&element.html().as_bytes()[..], 100 - 3);
         for line in text.lines().map(|l| l.trim()) {
-            if line.len() > 0 {
+            if !line.is_empty() {
                 description.push_str(&format!("// {}\n", line));
             } else {
                 description.push_str("//\n");
@@ -179,7 +179,7 @@ fn main() -> Result<()> {{
 
     aoc_lib::set_part_1!(0);
     // aoc_lib::set_part_2!(0);
-    
+
     Ok(())
 }}"#,
         description = description,

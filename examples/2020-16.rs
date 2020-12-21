@@ -160,7 +160,7 @@ fn main() -> Result<()> {
         .collect::<Vec<_>>();
 
     // figure out where the rules are
-    let mut positions = HashMap::new();
+    let mut possible_positions = HashMap::new();
     let ticket_number_len = tickets[0].len();
     for i in 0..rules.len() {
         let (_, ranges) = &rules[i];
@@ -171,13 +171,14 @@ fn main() -> Result<()> {
                 .all(|numbers| ranges.iter().any(|range| range.contains(&numbers[j])));
 
             if is_possible_rule {
-                positions.entry(i).or_insert(vec![]).push(j);
+                possible_positions.entry(i).or_insert(vec![]).push(j);
             }
         }
     }
 
-    loop {
-        let singles = positions
+    // solve which columns map to which rules
+    let positions = loop {
+        let singles = possible_positions
             .iter()
             .filter_map(|(rule_idx, ticket_idxs)| {
                 if ticket_idxs.len() == 1 {
@@ -189,28 +190,32 @@ fn main() -> Result<()> {
             .collect::<Vec<_>>();
 
         if singles.len() == rules.len() {
-            break;
+            break possible_positions
+                .iter()
+                .map(|(k, v)| (*k, v[0]))
+                .collect::<HashMap<usize, usize>>();
         }
 
         for (rule_idx, ticket_idx) in &singles {
-            for (r_idx, t_idxs) in positions.iter_mut() {
+            for (r_idx, t_idxs) in possible_positions.iter_mut() {
                 if r_idx != rule_idx {
                     t_idxs.retain(|idx| idx != ticket_idx);
                 }
             }
         }
-    }
+    };
 
     let rules_that_start_with_departure = rules
         .iter()
         .enumerate()
         .filter_map(|(idx, (name, _))| {
             if name.starts_with("departure") {
-                Some(positions.get(&idx).unwrap()[0])
+                Some(positions.get(&idx).unwrap())
             } else {
                 None
             }
         })
+        .copied()
         .collect::<Vec<_>>();
 
     let my_departure_values = my_ticket

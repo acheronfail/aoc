@@ -1,4 +1,4 @@
-use std::process::{Command, Stdio};
+use std::process::{self, Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
@@ -33,6 +33,10 @@ async fn run_loop(
     // ignore errors (fails if we try to set it more than once)
     let running_ctrlc = running.clone();
     let _ = ctrlc::set_handler(move || {
+        if !running_ctrlc.load(Ordering::SeqCst) {
+            process::exit(0);
+        }
+
         running_ctrlc.store(false, Ordering::SeqCst);
         println!("\rStopping watch loop...");
     });

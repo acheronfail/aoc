@@ -73,19 +73,26 @@
 
 use anyhow::Result;
 
-fn find(seed: &[usize], limit: usize) -> usize {
+// NOTE: using `u32` values here has a significant performance increase
+// I'm not entirely sure why, but I think it might have to do with reducing memory size, which allows
+// the CPU to cache and transfer more data at once
+fn find(seed: &[u32], limit: usize) -> u32 {
     // NOTE: using a Vec as a map here since HashMaps are way too slow.
-    // number -> last_idx
-    let mut last_seen = vec![0; limit];
-    for (idx, n) in seed.iter().enumerate().take(seed.len() - 1) {
-        last_seen[*n] = idx + 1;
+    // idx->number, value->last_seen_idx
+    let mut last_seen = vec![0_u32; limit];
+    for (n, idx) in seed
+        .iter()
+        .zip(0..=(seed.len() as u32))
+        .take(seed.len() - 1)
+    {
+        last_seen[*n as usize] = idx + 1;
     }
 
     let mut last_num = seed[seed.len() - 1];
-    for i in seed.len()..limit {
-        let idx = last_seen[last_num];
+    for i in (seed.len() as u32)..(limit as u32) {
+        let idx = last_seen[last_num as usize];
         let next_num = if idx != 0 { i - idx } else { 0 };
-        last_seen[last_num] = i;
+        last_seen[last_num as usize] = i;
         last_num = next_num;
     }
 
@@ -97,8 +104,8 @@ fn main() -> Result<()> {
     let numbers = input
         .lines()
         .flat_map(|line| line.trim().split(',').collect::<Vec<&str>>())
-        .map(|s| s.parse::<usize>().unwrap())
-        .collect::<Vec<usize>>();
+        .map(|s| s.parse::<u32>().unwrap())
+        .collect::<Vec<u32>>();
 
     aoc_lib::set_part_1!(find(&numbers, 2020));
     aoc_lib::set_part_2!(find(&numbers, 30000000));

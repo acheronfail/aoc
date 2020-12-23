@@ -138,7 +138,7 @@ use anyhow::Result;
 use itertools::Itertools;
 
 fn main() -> Result<()> {
-    let input = include_str!("./2019-7.txt").trim();
+    let input = include_str!("./input/2019-07.txt").trim();
     let int_codes = ints_from_str(input);
 
     let highest_signal = (0..5).permutations(5).fold(0, |result, mut combination| {

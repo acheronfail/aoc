@@ -159,7 +159,7 @@ fn test(lines: Vec<&str>, part_1: bool) -> isize {
 }
 
 fn main() {
-    let input = include_str!("./2020-8.txt").trim();
+    let input = include_str!("./input/2020-08.txt").trim();
     let lines = input.lines().collect::<Vec<&str>>();
 
     for (i, line) in lines.iter().enumerate() {

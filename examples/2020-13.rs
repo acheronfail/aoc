@@ -146,7 +146,7 @@
 use anyhow::Result;
 
 fn main() -> Result<()> {
-    let input = include_str!("./2020-13.txt").trim();
+    let input = include_str!("./input/2020-13.txt").trim();
     let lines = input.lines().collect::<Vec<&str>>();
 
     let depart_time = lines[0].trim().parse::<usize>()?;

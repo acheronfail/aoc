@@ -132,7 +132,7 @@ mod _2019;
 use _2019::{ints_from_str, Program};
 
 fn main() {
-    let input = include_str!("./2019-2.txt").trim();
+    let input = include_str!("./input/2019-02.txt").trim();
     let int_codes = ints_from_str(input);
 
     let mut memory = int_codes.clone();

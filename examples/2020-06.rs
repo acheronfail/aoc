@@ -94,7 +94,7 @@
 // of those counts?*
 
 fn main() {
-    let input = include_str!("./2020-6.txt");
+    let input = include_str!("./input/2020-06.txt");
 
     let mut groups = vec![];
     let mut group = String::new();

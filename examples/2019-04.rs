@@ -40,7 +40,7 @@ use anyhow::Result;
 use fancy_regex::Regex;
 
 fn main() -> Result<()> {
-    let input = include_str!("./2019-4.txt").trim();
+    let input = include_str!("./input/2019-04.txt").trim();
 
     let captures = Regex::new(r"(\d+)-(\d+)")?.captures(input)?.unwrap();
     let low = captures.get(1).unwrap().as_str().parse::<usize>()?;

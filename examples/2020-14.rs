@@ -150,7 +150,7 @@ enum Instruction {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("./2020-14.txt").trim();
+    let input = include_str!("./input/2020-14.txt").trim();
 
     let re = Regex::new(r#"mem\[(\d+)] = (\d+)"#)?;
     let instructions = input

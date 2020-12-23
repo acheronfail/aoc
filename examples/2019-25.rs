@@ -81,7 +81,7 @@ impl IntWrite for &mut Vec<u8> {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("./2019-25.txt").trim();
+    let input = include_str!("./input/2019-25.txt").trim();
     let ints = ints_from_str(input);
 
     let mut droid = Program::new(ints);

@@ -160,7 +160,7 @@ use _2019::{ints_from_str, Program, StopReason};
 use anyhow::Result;
 
 fn main() -> Result<()> {
-    let input = include_str!("./2019-5.txt").trim();
+    let input = include_str!("./input/2019-05.txt").trim();
     let int_codes = ints_from_str(input);
 
     {

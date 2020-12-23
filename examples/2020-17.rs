@@ -553,7 +553,7 @@ fn cycle4(mut state: Vec<Vec<Vec<Vec<char>>>>, count: usize) -> Vec<Vec<Vec<Vec<
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("./2020-17.txt").trim();
+    let input = include_str!("./input/2020-17.txt").trim();
     let lines = input
         .lines()
         .map(|line| line.chars().collect::<Vec<_>>())

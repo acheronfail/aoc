@@ -206,7 +206,7 @@ impl IntWrite for Port {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("./2019-23.txt").trim();
+    let input = include_str!("./input/2019-23.txt").trim();
     let ints = ints_from_str(input);
 
     let net = Arc::new(Mutex::new(Network::new()));

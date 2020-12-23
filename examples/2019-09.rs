@@ -85,7 +85,7 @@ mod _2019;
 use _2019::{ints_from_str, Program};
 
 fn main() -> Result<()> {
-    let input = include_str!("./2019-9.txt").trim();
+    let input = include_str!("./input/2019-09.txt").trim();
     let ints = ints_from_str(input);
 
     {

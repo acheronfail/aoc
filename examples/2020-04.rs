@@ -249,7 +249,7 @@ fn check_number(x: Option<&String>, min: isize, max: isize) -> bool {
 }
 
 fn main() {
-    let input = include_str!("./2020-4.txt");
+    let input = include_str!("./input/2020-04.txt");
 
     let mut passports = vec![];
     let mut passport_str = String::new();

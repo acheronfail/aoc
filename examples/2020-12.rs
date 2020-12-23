@@ -190,7 +190,7 @@ fn part2(actions: Vec<(char, isize)>) -> Point {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("./2020-12.txt").trim();
+    let input = include_str!("./input/2020-12.txt").trim();
     let actions = input
         .lines()
         .map(|line| {

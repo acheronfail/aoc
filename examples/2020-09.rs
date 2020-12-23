@@ -105,7 +105,7 @@
 // *What is the encryption weakness in your XMAS-encrypted list of numbers?*
 
 fn main() {
-    let input = include_str!("./2020-9.txt").trim();
+    let input = include_str!("./input/2020-09.txt").trim();
     let numbers = input
         .lines()
         .map(|line| line.parse::<usize>().unwrap())

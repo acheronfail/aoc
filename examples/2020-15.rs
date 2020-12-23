@@ -100,7 +100,7 @@ fn find(seed: &[u32], limit: usize) -> u32 {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("./2020-15.txt").trim();
+    let input = include_str!("./input/2020-15.txt").trim();
     let numbers = input
         .lines()
         .flat_map(|line| line.trim().split(',').collect::<Vec<&str>>())

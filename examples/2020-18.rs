@@ -176,7 +176,7 @@ fn eval_str(s: &str, f: fn(&str) -> usize) -> usize {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("./2020-18.txt").trim();
+    let input = include_str!("./input/2020-18.txt").trim();
     let expressions = input.lines().collect::<Vec<_>>();
 
     aoc_lib::set_part_1!(expressions

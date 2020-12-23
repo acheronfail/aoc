@@ -62,7 +62,7 @@
 // separately, then add them all up at the end.)
 
 fn main() {
-    let input = include_str!("./2019-1.txt");
+    let input = include_str!("./input/2019-01.txt");
 
     aoc_lib::set_part_1!(input.trim().lines().fold(0, |result, line| {
         result + ((line.parse::<f64>().unwrap() / 3.0).floor()) as isize - 2

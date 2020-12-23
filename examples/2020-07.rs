@@ -110,7 +110,7 @@ fn n_bags_required_inside(
 }
 
 fn main() {
-    let input = include_str!("./2020-7.txt");
+    let input = include_str!("./input/2020-07.txt");
     let mut parent_rule_map: HashMap<String, Vec<String>> = HashMap::new();
     let mut child_rule_map: HashMap<String, Vec<(String, usize)>> = HashMap::new();
 

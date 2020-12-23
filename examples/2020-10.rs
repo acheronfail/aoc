@@ -174,7 +174,7 @@
 use std::collections::HashMap;
 
 fn main() {
-    let input = include_str!("./2020-10.txt").trim();
+    let input = include_str!("./input/2020-10.txt").trim();
     let mut adapters = input
         .lines()
         .map(|line| line.parse::<usize>().unwrap())

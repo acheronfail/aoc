@@ -129,7 +129,7 @@ fn all_points(line: &str) -> HashMap<(isize, isize), usize> {
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("./2019-3.txt").trim();
+    let input = include_str!("./input/2019-03.txt").trim();
     let (line_a, line_b) = aoc_lib::utils::string_split2("\n", input);
     let (points_a, points_b) = (all_points(&line_a), all_points(&line_b));
 

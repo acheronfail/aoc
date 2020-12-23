@@ -99,7 +99,7 @@ use regex::Regex;
 use std::collections::HashMap;
 
 fn main() -> Result<()> {
-    let input = include_str!("./2020-16.txt").trim();
+    let input = include_str!("./input/2020-16.txt").trim();
     let groups = input.split("\n\n").collect::<Vec<_>>();
 
     let re = Regex::new(r#"((?:\d+)-(?:\d+))"#)?;

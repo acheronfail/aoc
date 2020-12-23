@@ -88,7 +88,7 @@ fn boarding_pass_to_rowcol(pass: &str) -> (usize, usize) {
 }
 
 fn main() {
-    let input = include_str!("./2020-5.txt");
+    let input = include_str!("./input/2020-05.txt");
 
     use std::collections::HashSet;
     let mut set: HashSet<usize> = HashSet::new();

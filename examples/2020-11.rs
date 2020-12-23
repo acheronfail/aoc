@@ -361,7 +361,7 @@ fn n_seats_once_stable(
 }
 
 fn main() -> Result<()> {
-    let input = include_str!("./2020-11.txt").trim();
+    let input = include_str!("./input/2020-11.txt").trim();
     let lines = input
         .lines()
         .map(|s| s.chars().collect::<Vec<char>>())

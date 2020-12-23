@@ -18,7 +18,7 @@ enum Action {
 async fn run_loop(client: &Client, args: &Args, running: &Arc<AtomicBool>) -> Result<Action> {
     // create new challenge if it doesn't exist
     println!(
-        "Loading challenge {year}-{day}...",
+        "Loading challenge {year}-{day:02}...",
         year = args.year,
         day = args.day
     );
@@ -47,7 +47,7 @@ async fn run_loop(client: &Client, args: &Args, running: &Arc<AtomicBool>) -> Re
             "watch",
             "-x",
             &format!(
-                "run {release} --example {year}-{day}",
+                "run {release} --example {year}-{day:02}",
                 release = if args.release { "--release" } else { "" },
                 year = args.year,
                 day = args.day

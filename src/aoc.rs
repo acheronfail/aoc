@@ -116,8 +116,10 @@ pub fn get_client() -> Result<Client> {
 }
 
 pub async fn create_or_update_challenge(client: &Client, year: usize, day: usize) -> Result<()> {
+    fs::create_dir_all("examples/input")?;
+
     // create input file if it didn't exist
-    let input_file = format!("examples/{year}-{day}.txt", year = year, day = day);
+    let input_file = format!("examples/input/{year}-{day:02}.txt", year = year, day = day);
     if let Ok(mut f) = OpenOptions::new()
         .create_new(true)
         .write(true)
@@ -139,7 +141,7 @@ pub async fn create_or_update_challenge(client: &Client, year: usize, day: usize
         .create(true)
         .read(true)
         .write(true)
-        .open(&format!("examples/{year}-{day}.rs", year = year, day = day))
+        .open(&format!("examples/{year}-{day:02}.rs", year = year, day = day))
     {
         // file already existed with data, so remove the first comment (puzzle description) and re-write it
         if f.metadata()?.len() > 0 {
@@ -163,7 +165,7 @@ pub async fn create_or_update_challenge(client: &Client, year: usize, day: usize
 
 pub fn is_part_1_complete(year: usize, day: usize) -> Result<bool> {
     Ok(
-        fs::read_to_string(&format!("examples/{year}-{day}.rs", year = year, day = day))?
+        fs::read_to_string(&format!("examples/{year}-{day:02}.rs", year = year, day = day))?
             .contains("--- Part Two ---"),
     )
 }
@@ -175,7 +177,7 @@ fn new_source_file(description: &str, year: usize, day: usize) -> String {
 use anyhow::Result;
 
 fn main() -> Result<()> {{
-    let input = include_str!("./{year}-{day}.txt").trim();
+    let input = include_str!("./input/{year}-{day:02}.txt").trim();
 
     aoc_lib::set_part_1!(0);
     // aoc_lib::set_part_2!(0);

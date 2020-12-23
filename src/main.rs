@@ -15,15 +15,14 @@ enum Action {
     Quit,
 }
 
-async fn run_loop(
-    client: &Client,
-    year: usize,
-    day: usize,
-    running: &Arc<AtomicBool>,
-) -> Result<Action> {
+async fn run_loop(client: &Client, args: &Args, running: &Arc<AtomicBool>) -> Result<Action> {
     // create new challenge if it doesn't exist
-    println!("Loading challenge {year}-{day}...", year = year, day = day);
-    aoc_lib::aoc::create_or_update_challenge(&client, year, day).await?;
+    println!(
+        "Loading challenge {year}-{day}...",
+        year = args.year,
+        day = args.day
+    );
+    aoc_lib::aoc::create_or_update_challenge(&client, args.year, args.day).await?;
 
     // clean up old answers
     aoc_lib::remove_part_1!();
@@ -47,7 +46,12 @@ async fn run_loop(
         .args(&[
             "watch",
             "-x",
-            &format!("run --example {year}-{day}", year = year, day = day),
+            &format!(
+                "run {release} --example {year}-{day}",
+                release = if args.release { "--release" } else { "" },
+                year = args.year,
+                day = args.day
+            ),
         ])
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
@@ -66,14 +70,14 @@ async fn run_loop(
     let answer = prompt_from_stdin(Some("Submit answers? [1]/[2]/[q]uit: "))?;
     match answer.as_str() {
         "1" => {
-            if aoc_lib::submit_part_1!(&client, year, day) {
+            if aoc_lib::submit_part_1!(&client, args.year, args.day) {
                 Ok(Action::Continue)
             } else {
                 Ok(Action::Prompt)
             }
         }
         "2" => {
-            if aoc_lib::submit_part_2!(&client, year, day) {
+            if aoc_lib::submit_part_2!(&client, args.year, args.day) {
                 Ok(Action::Quit)
             } else {
                 Ok(Action::Prompt)
@@ -91,7 +95,7 @@ async fn main() -> Result<()> {
 
     let running = Arc::new(AtomicBool::new(true));
     loop {
-        match run_loop(&client, args.year, args.day, &running).await? {
+        match run_loop(&client, &args, &running).await? {
             Action::Continue => running.store(true, Ordering::SeqCst),
             Action::Prompt => {
                 running.store(true, Ordering::SeqCst);

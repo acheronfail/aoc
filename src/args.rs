@@ -6,6 +6,9 @@ use clap::{crate_authors, Clap};
 pub struct Args {
     pub year: usize,
     pub day: usize,
+
+    #[clap(short = 'r', long = "release")]
+    pub release: bool,
 }
 
 impl Args {

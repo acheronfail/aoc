@@ -249,25 +249,28 @@ fn main() -> Result<()> {
     let rule_0_re = Regex::new(&format!("^{}$", rule_to_regex(&rules, 0, &mut regexes)))?;
     aoc_lib::set_part_1!(messages.iter().filter(|m| rule_0_re.is_match(m)).count());
 
-    // insert "loops" for part 2
-    // 8: 42 | 42 8
-    regexes.insert(8, format!("({})+", regexes.get(&42).unwrap()));
-    // 11: 42 31 | 42 11 31
-    regexes.insert(
-        11,
-        format!(
-            "(?<recursion>{_42}(?&recursion)?{_31})",
-            _42 = regexes.get(&42).unwrap(),
-            _31 = regexes.get(&31).unwrap()
-        ),
-    );
+    {
+        use pcre2::bytes::Regex;
 
-    let rule_0_re =
-        pcre2::bytes::Regex::new(&format!("^{}$", rule_to_regex(&rules, 0, &mut regexes)))?;
-    aoc_lib::set_part_2!(messages
-        .iter()
-        .filter(|m| rule_0_re.is_match(m.as_bytes()).unwrap())
-        .count());
+        // insert "loops" for part 2
+        // 8: 42 | 42 8
+        regexes.insert(8, format!("({})+", regexes.get(&42).unwrap()));
+        // 11: 42 31 | 42 11 31
+        regexes.insert(
+            11,
+            format!(
+                "(?<_11>{_42}(?&_11)?{_31})",
+                _42 = regexes.get(&42).unwrap(),
+                _31 = regexes.get(&31).unwrap()
+            ),
+        );
+
+        let rule_0_re = Regex::new(&format!("^{}$", rule_to_regex(&rules, 0, &mut regexes)))?;
+        aoc_lib::set_part_2!(messages
+            .iter()
+            .filter(|m| rule_0_re.is_match(m.as_bytes()).unwrap())
+            .count());
+    }
 
     Ok(())
 }

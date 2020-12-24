@@ -141,7 +141,11 @@ pub async fn create_or_update_challenge(client: &Client, year: usize, day: usize
         .create(true)
         .read(true)
         .write(true)
-        .open(&format!("examples/{year}-{day:02}.rs", year = year, day = day))
+        .open(&format!(
+            "examples/{year}-{day:02}.rs",
+            year = year,
+            day = day
+        ))
     {
         // file already existed with data, so remove the first comment (puzzle description) and re-write it
         if f.metadata()?.len() > 0 {
@@ -164,10 +168,12 @@ pub async fn create_or_update_challenge(client: &Client, year: usize, day: usize
 }
 
 pub fn is_part_1_complete(year: usize, day: usize) -> Result<bool> {
-    Ok(
-        fs::read_to_string(&format!("examples/{year}-{day:02}.rs", year = year, day = day))?
-            .contains("--- Part Two ---"),
-    )
+    Ok(fs::read_to_string(&format!(
+        "examples/{year}-{day:02}.rs",
+        year = year,
+        day = day
+    ))?
+    .contains("--- Part Two ---"))
 }
 
 fn new_source_file(description: &str, year: usize, day: usize) -> String {

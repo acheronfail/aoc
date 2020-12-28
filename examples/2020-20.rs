@@ -386,50 +386,9 @@ impl Display for Tile {
     }
 }
 
-#[inline]
-fn rev_str(s: impl AsRef<str>) -> String {
-    s.as_ref().chars().rev().collect()
-}
-
-fn check<S: AsRef<str>>(a: S, b: S) -> Option<String> {
+fn sides_can_match<S: AsRef<str>>(a: S, b: S) -> bool {
     let (a, b) = (a.as_ref(), b.as_ref());
-    if a == b {
-        Some(a.to_string())
-    } else {
-        let reversed = rev_str(&a);
-        if reversed == b {
-            Some(reversed)
-        } else {
-            None
-        }
-    }
-}
-
-macro_rules! set {
-    ($set:ident[$a:expr][$b:expr] exists) => {
-        $set.entry($a).or_insert(HashSet::new()).contains(&$b)
-    };
-    ($set:ident[$a:expr][$b:expr] insert) => {
-        $set.entry($a).or_insert(HashSet::new()).insert($b)
-    };
-}
-
-fn dfs<'a>(
-    start: usize,
-    graph: &'a HashMap<usize, Vec<usize>>,
-    visited: &'a mut HashMap<usize, HashSet<usize>>,
-    path: &'a mut Vec<usize>,
-) -> &'a mut Vec<usize> {
-    path.push(start);
-    for next in graph.get(&start).unwrap().iter().cloned() {
-        if !set!(visited[start][next] exists) {
-            set!(visited[start][next] insert);
-            set!(visited[next][start] insert);
-            dfs(next, graph, visited, path);
-        }
-    }
-
-    path
+    a == b || a.chars().rev().collect::<String>() == b
 }
 
 fn rotate(input: &Vec<Vec<char>>) -> Vec<Vec<char>> {
@@ -457,11 +416,8 @@ fn flip_h(input: &Vec<Vec<char>>) -> Vec<Vec<char>> {
     output
 }
 
-const UP: (isize, isize) = (0, -1);
-const RIGHT: (isize, isize) = (1, 0);
-const DOWN: (isize, isize) = (0, 1);
-const LEFT: (isize, isize) = (-1, 0);
-const DIRECTIONS: [(isize, isize); 4] = [UP, RIGHT, DOWN, LEFT];
+// up, right, down, left
+const DIRECTIONS: [(isize, isize); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
 
 fn main() -> Result<()> {
     let input = include_str!("./input/2020-20.txt").trim();
@@ -476,7 +432,7 @@ fn main() -> Result<()> {
 
             for a in tile.sides().iter() {
                 for b in other.sides().iter() {
-                    if check(a, b).is_some() {
+                    if sides_can_match(a, b) {
                         adjacency_list
                             .entry(tile.id)
                             .or_insert(vec![])
@@ -494,76 +450,64 @@ fn main() -> Result<()> {
         .collect::<HashSet<usize>>();
     aoc_lib::set_part_1!(corner_ids.iter().product::<usize>());
 
-    // Looks like we have 3 Euler paths and 1 Euler cycle
-    for id in &corner_ids {
-        let mut path = vec![];
-        dfs(*id, &adjacency_list, &mut HashMap::new(), &mut path);
-        println!(
-            "corner {} is cycle: {}",
-            id,
-            path[0] == path[path.len() - 1]
-        );
-    }
+    let n_tiles = (tiles.len() as f64).sqrt() as usize;
+    let mut pieces: Vec<Vec<Option<usize>>> = vec![vec![None; n_tiles]; n_tiles];
 
-    let img_width = (tiles.len() as f64).sqrt() as usize;
-    let mut image: Vec<Vec<Option<usize>>> = vec![vec![None; img_width]; img_width];
-
-    // Put in the top-left corner pieces
+    // put in the top-left corner pieces
     let top_left = *corner_ids.iter().next().unwrap();
     let adjacent = adjacency_list.get(&top_left).unwrap();
-    let right = &adjacent[0];
-    let under = &adjacent[1];
-    image[0][0] = Some(top_left);
-    image[0][1] = Some(*right);
-    image[1][0] = Some(*under);
+    pieces[0][0] = Some(top_left);
+    pieces[0][1] = Some(adjacent[0]);
+    pieces[1][0] = Some(adjacent[1]);
     let mut used = HashSet::new();
     used.insert(top_left);
-    used.insert(*right);
-    used.insert(*under);
+    used.insert(adjacent[0]);
+    used.insert(adjacent[1]);
 
     let mut tiles = tiles
         .into_iter()
         .map(|t| (t.id, t))
         .collect::<HashMap<usize, Tile>>();
 
+    // place all the tiles in the right spots
     loop {
         if used.len() == tiles.len() {
             break;
         }
-        for x in 0..img_width {
-            for y in 0..img_width {
-                if image[y][x].is_some() {
+
+        for x in 0..n_tiles {
+            for y in 0..n_tiles {
+                if pieces[y][x].is_some() {
                     continue;
                 }
+
                 let mut available = adjacency_list
                     .keys()
                     .filter(|k| !used.contains(k))
                     .copied()
                     .collect::<HashSet<usize>>();
+
                 for (dx, dy) in DIRECTIONS.iter() {
-                    let (x, y) = ((x as isize) + dx, ((y as isize) + dy));
-                    if (x >= 0 && x < (img_width as isize)) && (y >= 0 && y < (img_width as isize))
-                    {
-                        let (x, y) = (x as usize, y as usize);
-                        if let Some(id) = image[y][x] {
-                            available = available
-                                .intersection(
-                                    &adjacency_list
-                                        .get(&id)
-                                        .unwrap()
-                                        .iter()
-                                        .copied()
-                                        .collect::<HashSet<usize>>(),
-                                )
-                                .copied()
-                                .collect::<HashSet<_>>();
-                        }
+                    let (x, y) = ((x as isize) + dx, (y as isize) + dy);
+                    let (x, y) = (x as usize, y as usize);
+                    if let Some(Some(Some(id))) = pieces.get(y).map(|row| row.get(x)) {
+                        available = available
+                            .intersection(
+                                &adjacency_list
+                                    .get(&id)
+                                    .unwrap()
+                                    .iter()
+                                    .copied()
+                                    .collect::<HashSet<usize>>(),
+                            )
+                            .copied()
+                            .collect::<HashSet<_>>();
                     }
                 }
 
                 if available.len() == 1 {
                     let id = *available.iter().next().unwrap();
-                    image[y][x] = Some(id);
+                    pieces[y][x] = Some(id);
                     used.insert(id);
                 }
             }
@@ -571,16 +515,17 @@ fn main() -> Result<()> {
     }
 
     // rotate each piece correctly
-    for y in 0..img_width {
-        for x in 0..img_width {
-            let id = image[y][x].unwrap();
+    for y in 0..n_tiles {
+        for x in 0..n_tiles {
+            let id = pieces[y][x].unwrap();
             let tile = tiles.get(&id).unwrap();
             let mut orientations = tile.orientations().collect::<Vec<_>>();
+
             // NOTE: this assumes that there's only one valid orientation for a piece that fits with its neighbours
             for (i, (dx, dy)) in DIRECTIONS.iter().enumerate() {
                 let (x, y) = ((x as isize) + dx, (y as isize) + dy);
                 let (x, y) = (x as usize, y as usize);
-                if let Some(Some(Some(other_id))) = image.get(y).map(|row| row.get(x)) {
+                if let Some(Some(Some(other_id))) = pieces.get(y).map(|row| row.get(x)) {
                     let other = tiles.get(other_id).unwrap();
                     let mut ok_orientations = vec![];
                     for a in &orientations {
@@ -590,6 +535,7 @@ fn main() -> Result<()> {
                             }
                         }
                     }
+
                     orientations.retain(|t| ok_orientations.contains(&(t as *const _)));
                 }
             }
@@ -602,14 +548,14 @@ fn main() -> Result<()> {
         }
     }
 
-    // remove borders and build image
+    // remove borders and build final picture
     let picture = {
         let mut data: Vec<Vec<char>> = vec![];
-        for y in 0..img_width {
+        for y in 0..n_tiles {
             for i in 1..9 {
                 let mut line = vec![];
-                for x in 0..img_width {
-                    let tile = tiles.get(&image[y][x].unwrap()).unwrap();
+                for x in 0..n_tiles {
+                    let tile = tiles.get(&pieces[y][x].unwrap()).unwrap();
                     let row = &tile.data[i];
                     line.extend(&row[1..9].to_vec());
                 }
@@ -620,6 +566,7 @@ fn main() -> Result<()> {
         Tile::new(0, data)
     };
 
+    // map sea monster to a list of positions
     let sea_monster_positions = [
         "                  # ",
         "#    ##    ##    ###",
@@ -636,17 +583,17 @@ fn main() -> Result<()> {
     .collect::<Vec<_>>();
 
     // check for sea monsters
-    let line_width = img_width * 8;
+    let line_width = n_tiles * 8;
     let max_y = sea_monster_positions.iter().map(|(_, y)| y).max().unwrap() + 1;
     let max_x = sea_monster_positions.iter().map(|(x, _)| x).max().unwrap() + 1;
     for tile in picture.orientations() {
         let mut sea_monsters = 0;
         for window in tile.data.windows(max_y) {
             for i in 0..line_width - max_x - 1 {
-                if sea_monster_positions
+                let has_sea_monster = sea_monster_positions
                     .iter()
-                    .all(|(x, y)| window[*y][*x + i] == '#')
-                {
+                    .all(|(x, y)| window[*y][*x + i] == '#');
+                if has_sea_monster {
                     sea_monsters += 1;
                 }
             }
@@ -659,6 +606,7 @@ fn main() -> Result<()> {
                 .data
                 .iter()
                 .fold(0, |r, v| r + v.iter().filter(|ch| **ch == '#').count());
+
             let water_roughness = total_hashes - (sea_monsters * sea_monster_positions.len());
             aoc_lib::set_part_2!(water_roughness);
             return Ok(());

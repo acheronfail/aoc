@@ -63,8 +63,6 @@ use anyhow::Result;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
-// TODO: EasyMap: map[x] = 5 (defaultdict, etc)
-
 macro_rules! c {
     ($cap:expr, $n:expr) => {
         $cap.get($n).unwrap().as_str().trim()

@@ -88,7 +88,10 @@ fn main() -> Result<()> {
         for ing in &ingredients {
             *ingredients_counts.entry(*ing).or_insert(0) += 1;
             for al in &allergens {
-                ingredients_to_allergens.entry(*ing).or_insert(HashSet::new()).insert(*al);
+                ingredients_to_allergens
+                    .entry(*ing)
+                    .or_insert(HashSet::new())
+                    .insert(*al);
             }
         }
     }
@@ -107,7 +110,13 @@ fn main() -> Result<()> {
 
     let no_allergens_count = ingredients_to_allergens
         .iter()
-        .filter_map(|(ing, al)| if al.is_empty() { ingredients_counts.get(ing) } else { None })
+        .filter_map(|(ing, al)| {
+            if al.is_empty() {
+                ingredients_counts.get(ing)
+            } else {
+                None
+            }
+        })
         .sum::<usize>();
     aoc_lib::set_part_1!(no_allergens_count);
 

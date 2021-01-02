@@ -128,29 +128,21 @@ fn play(cups: &Vec<usize>, count: usize) -> Vec<usize> {
         let r1 = right_of[cur];
         let r2 = right_of[r1];
         let r3 = right_of[r2];
-
-        // find destination cup
-        let dest = {
-            let mut nxt = cur;
-            // it's `cur - 1` unless that falls in one of the removed cups
-            loop {
-                nxt = if nxt > 1 { nxt - 1 } else { max };
-                if nxt != r1 && nxt != r2 && nxt != r3 {
-                    break nxt;
-                }
-            }
-        };
-
-        // now "remove" the three cups by setting the next cup after the current to the cup after them
+        // "remove" the three cups by setting the next cup after the current to the cup after them
         right_of[cur] = right_of[r3];
 
-        // get the next cup after the dest
-        let tmp = right_of[dest];
+        // find destination cup
+        let mut nxt = if cur > 1 { cur - 1 } else { max };
+        while [r1, r2, r3].contains(&nxt) {
+            nxt = if nxt > 1 { nxt - 1 } else { max };
+        }
+
         // splice in the "removed" cups
-        right_of[dest] = r1;
+        let tmp = right_of[nxt];
+        right_of[nxt] = r1;
         right_of[r3] = tmp;
 
-        // current is now the next after `cur`
+        // current is now the cup right of `cur`
         cur = right_of[cur];
     }
 

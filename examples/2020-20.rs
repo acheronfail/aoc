@@ -283,11 +283,10 @@
 // *How many `#` are not part of a sea monster?*
 
 use anyhow::Result;
-use std::collections::{HashMap, HashSet};
+use easy_collections::{map, set, EasyMap, EasySet};
 use std::fmt::{self, Display};
-// use std::ops::Index;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 struct Tile {
     id: usize,
     height: usize,
@@ -310,34 +309,18 @@ impl Tile {
         ]
     }
 
-    // o   h   v   vh  L1  L2  R1  R2
-    // 123 321 789 987 369 987 741 987
-    // 456 654 456 654 258 654 852 654
-    // 789 987 123 321 147 321 963 321
-    //
-    // hL1 vL1 hR1 vR1 hL2 vL2 hR2 vR2
-    // 963 147 147 963 789 321 789 321
-    // 852 258 258 852 456 654 456 654
-    // 741 369 369 741 321 987 123 987
-    //
-    // o   == R4  == L4  == hh  ==  vv
-    // v   == vL2 == vR2
-    // h   == hL2 == vR2
-    // hv  == vh  == L2  == R2
-    // L1  == R3
-    // R1  == L3
-    // hL1 == vR1
-    // vL1 == hR1
+    // NOTE: all orientations. Flipping horizontally and rotating twice is the same as flipping vertically.
+    // Therefore, all possible rotations and all possible rotations after flipping once covers every orientation.
     pub fn orientations(&self) -> impl Iterator<Item = Tile> + '_ {
         vec![
             self.data.clone(),
-            flip_v(&self.data),
-            flip_h(&self.data),
-            flip_h(&flip_v(&self.data)),
             rotate(&self.data),
+            rotate(&rotate(&self.data)),
             rotate(&rotate(&rotate(&self.data))),
-            flip_v(&rotate(&self.data)),
-            flip_h(&rotate(&self.data)),
+            flip_v(&self.data),
+            rotate(&flip_v(&self.data)),
+            rotate(&rotate(&flip_v(&self.data))),
+            rotate(&rotate(&rotate(&flip_v(&self.data)))),
         ]
         .into_iter()
         .map(move |data| Tile::new(self.id, data))
@@ -407,23 +390,19 @@ fn flip_v(input: &Vec<Vec<char>>) -> Vec<Vec<char>> {
     input.iter().rev().cloned().collect()
 }
 
-fn flip_h(input: &Vec<Vec<char>>) -> Vec<Vec<char>> {
-    let mut output = input.clone();
-    for i in 0..output.len() {
-        output[i] = output[i].iter().copied().rev().collect();
-    }
-
-    output
-}
-
 // up, right, down, left
 const DIRECTIONS: [(isize, isize); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
+const SEA_MONSTER: [&str; 3] = [
+    "                  # ",
+    "#    ##    ##    ###",
+    " #  #  #  #  #  #   ",
+];
 
 fn main() -> Result<()> {
     let input = include_str!("./input/2020-20.txt").trim();
     let tiles = input.split("\n\n").map(Tile::from).collect::<Vec<_>>();
 
-    let mut adjacency_list = HashMap::new();
+    let mut adjacency_list = map! {};
     for (i, tile) in tiles.iter().enumerate() {
         for (j, other) in tiles.iter().enumerate() {
             if i == j {
@@ -447,7 +426,7 @@ fn main() -> Result<()> {
         .iter()
         .filter_map(|(id, v)| if v.len() == 2 { Some(id) } else { None })
         .copied()
-        .collect::<HashSet<usize>>();
+        .collect::<EasySet<usize>>();
     aoc_lib::set_part_1!(corner_ids.iter().product::<usize>());
 
     let n_tiles = (tiles.len() as f64).sqrt() as usize;
@@ -459,15 +438,8 @@ fn main() -> Result<()> {
     pieces[0][0] = Some(top_left);
     pieces[0][1] = Some(adjacent[0]);
     pieces[1][0] = Some(adjacent[1]);
-    let mut used = HashSet::new();
-    used.insert(top_left);
-    used.insert(adjacent[0]);
-    used.insert(adjacent[1]);
-
-    let mut tiles = tiles
-        .into_iter()
-        .map(|t| (t.id, t))
-        .collect::<HashMap<usize, Tile>>();
+    let mut used = set! {top_left, adjacent[0], adjacent[1]};
+    let mut tiles: EasyMap<usize, Tile> = tiles.into_iter().map(|t| (t.id, t)).collect();
 
     // place all the tiles in the right spots
     loop {
@@ -485,23 +457,14 @@ fn main() -> Result<()> {
                     .keys()
                     .filter(|k| !used.contains(k))
                     .copied()
-                    .collect::<HashSet<usize>>();
+                    .collect::<EasySet<usize>>();
 
                 for (dx, dy) in DIRECTIONS.iter() {
                     let (x, y) = ((x as isize) + dx, (y as isize) + dy);
                     let (x, y) = (x as usize, y as usize);
                     if let Some(Some(Some(id))) = pieces.get(y).map(|row| row.get(x)) {
-                        available = available
-                            .intersection(
-                                &adjacency_list
-                                    .get(&id)
-                                    .unwrap()
-                                    .iter()
-                                    .copied()
-                                    .collect::<HashSet<usize>>(),
-                            )
-                            .copied()
-                            .collect::<HashSet<_>>();
+                        let possible = adjacency_list.get(&id).unwrap();
+                        available &= &possible[..];
                     }
                 }
 
@@ -567,20 +530,16 @@ fn main() -> Result<()> {
     };
 
     // map sea monster to a list of positions
-    let sea_monster_positions = [
-        "                  # ",
-        "#    ##    ##    ###",
-        " #  #  #  #  #  #   ",
-    ]
-    .iter()
-    .enumerate()
-    .flat_map(|(y, line)| {
-        line.chars()
-            .enumerate()
-            .filter_map(|(x, ch)| if ch == '#' { Some((x, y)) } else { None })
-            .collect::<Vec<_>>()
-    })
-    .collect::<Vec<_>>();
+    let sea_monster_positions = SEA_MONSTER
+        .iter()
+        .enumerate()
+        .flat_map(|(y, line)| {
+            line.chars()
+                .enumerate()
+                .filter_map(|(x, ch)| if ch == '#' { Some((x, y)) } else { None })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
 
     // check for sea monsters
     let line_width = n_tiles * 8;

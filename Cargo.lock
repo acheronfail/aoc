@@ -22,6 +22,7 @@ dependencies = [
  "anyhow",
  "clap",
  "ctrlc",
+ "easy_collections",
  "fancy-regex",
  "html2text",
  "itertools",
@@ -293,6 +294,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "59020b8513b76630c49d918c33db9f4c91638e7d3404a28084083b87e33f76f2"
 dependencies = [
  "dtoa",
+]
+
+[[package]]
+name = "easy_collections"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db3350b089a1b9df59a738c4b252389cb17345f6111bd7fd039a099eca42a1f1"
+dependencies = [
+ "paste",
 ]
 
 [[package]]
@@ -1024,9 +1034,9 @@ checksum = "afb2e1c3ee07430c2cf76151675e583e0f19985fa6efae47d6848a3e2c824f85"
 
 [[package]]
 name = "paste"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7151b083b0664ed58ed669fcdd92f01c3d2fdbf10af4931a301474950b52bfa9"
+checksum = "c5d65c4d95931acda4498f675e332fcbdc9a06705cd07086c510e9b6009cd1c1"
 
 [[package]]
 name = "pcre2"

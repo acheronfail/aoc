@@ -463,8 +463,7 @@ fn main() -> Result<()> {
                     let (x, y) = ((x as isize) + dx, (y as isize) + dy);
                     let (x, y) = (x as usize, y as usize);
                     if let Some(Some(Some(id))) = pieces.get(y).map(|row| row.get(x)) {
-                        let possible = adjacency_list.get(&id).unwrap();
-                        available &= &possible[..];
+                        available &= adjacency_list.get(&id).unwrap();
                     }
                 }
 

@@ -298,9 +298,9 @@ dependencies = [
 
 [[package]]
 name = "easy_collections"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db3350b089a1b9df59a738c4b252389cb17345f6111bd7fd039a099eca42a1f1"
+checksum = "0379b29678503bf90b8b5f7dae9cae72ebcc51c21a02b96ca01c46568061590a"
 dependencies = [
  "paste",
 ]

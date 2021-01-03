@@ -96,7 +96,27 @@
 
 use anyhow::Result;
 use regex::Regex;
-use std::collections::HashMap;
+
+// This is heaps slower than the previous approach, but it is more accurate.
+// It will find _all possible paths_, and doesn't have the limitation of requiring there to always be
+// one rule with only one possible match, etc.
+fn solve_recursive(possible: &Vec<Vec<usize>>, i: usize, path: Vec<usize>) -> Vec<Vec<usize>> {
+    if i >= possible.len() {
+        vec![path]
+    } else {
+        let mut paths = vec![];
+        for j in &possible[i] {
+            if path.contains(&j) {
+                continue;
+            }
+
+            for sub_path in solve_recursive(possible, i + 1, [&path[..], &[*j]].concat()) {
+                paths.push(sub_path);
+            }
+        }
+        paths
+    }
+}
 
 fn main() -> Result<()> {
     let input = include_str!("./input/2020-16.txt").trim();
@@ -160,7 +180,7 @@ fn main() -> Result<()> {
         .collect::<Vec<_>>();
 
     // figure out where the rules are
-    let mut possible_positions = HashMap::new();
+    let mut possible_positions = vec![vec![]; rules.len()];
     let ticket_number_len = tickets[0].len();
     for i in 0..rules.len() {
         let (_, ranges) = &rules[i];
@@ -171,51 +191,23 @@ fn main() -> Result<()> {
                 .all(|numbers| ranges.iter().any(|range| range.contains(&numbers[j])));
 
             if is_possible_rule {
-                possible_positions.entry(i).or_insert(vec![]).push(j);
+                possible_positions[i].push(j);
             }
         }
     }
 
     // solve which columns map to which rules
-    let positions = loop {
-        let singles = possible_positions
-            .iter()
-            .filter_map(|(rule_idx, ticket_idxs)| {
-                if ticket_idxs.len() == 1 {
-                    Some((*rule_idx, ticket_idxs[0]))
-                } else {
-                    None
-                }
-            })
-            .collect::<Vec<_>>();
-
-        if singles.len() == rules.len() {
-            break possible_positions
-                .iter()
-                .map(|(k, v)| (*k, v[0]))
-                .collect::<HashMap<usize, usize>>();
-        }
-
-        for (rule_idx, ticket_idx) in &singles {
-            for (r_idx, t_idxs) in possible_positions.iter_mut() {
-                if r_idx != rule_idx {
-                    t_idxs.retain(|idx| idx != ticket_idx);
-                }
-            }
-        }
-    };
-
+    let positions = &solve_recursive(&possible_positions, 0, vec![])[0];
     let rules_that_start_with_departure = rules
         .iter()
         .enumerate()
         .filter_map(|(idx, (name, _))| {
             if name.starts_with("departure") {
-                Some(positions.get(&idx).unwrap())
+                Some(positions[idx])
             } else {
                 None
             }
         })
-        .copied()
         .collect::<Vec<_>>();
 
     let my_departure_values = my_ticket

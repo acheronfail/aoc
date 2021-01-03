@@ -12,6 +12,9 @@ path = "src/lib.rs"
 name = "aoc"
 path = "src/main.rs"
 
+[profile.release]
+debug = true
+
 [dependencies]
 anyhow = "1.0.34"
 clap = "3.0.0-beta.2"

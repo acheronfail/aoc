@@ -1,4 +1,4 @@
-use crate::_2019::Int;
+use crate::Int;
 
 pub trait IntWrite {
     fn int_write(&mut self, value: Int);

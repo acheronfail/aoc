@@ -1,0 +1,15 @@
+[package]
+name = "_2020"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+aoc = { path = "../aoc" }
+anyhow = "1.0.34"
+lazy_static = "1.4.0"
+regex = "1.4.2"
+pcre2 = "0.2.3"
+easy_collections = "0.3.2"
+mod_exp = "1.0.1"

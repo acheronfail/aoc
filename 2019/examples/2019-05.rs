@@ -154,7 +154,6 @@
 //
 // [1] https://en.wikipedia.org/wiki/Spacecraft_thermal_control
 
-mod _2019;
 use _2019::{ints_from_str, Program, StopReason};
 
 use anyhow::Result;

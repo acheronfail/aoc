@@ -71,7 +71,6 @@ use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
-mod _2019;
 use _2019::io::{IntRead, IntWrite};
 use _2019::{ints_from_str, Int, Program};
 

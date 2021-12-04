@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use crate::_2019::Int;
+use crate::Int;
 
 pub trait IntRead {
     fn int_read(&mut self) -> Option<Int>;

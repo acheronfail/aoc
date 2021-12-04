@@ -20,3 +20,8 @@ FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 ```
+
+## TODO
+
+* restructure as workspace crate, with each sub-crate being a year
+* each year will be a lib, and have examples which use the lib, and solve each day

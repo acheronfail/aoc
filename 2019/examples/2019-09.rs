@@ -81,7 +81,6 @@
 
 use anyhow::Result;
 
-mod _2019;
 use _2019::{ints_from_str, Program};
 
 fn main() -> Result<()> {

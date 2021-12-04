@@ -61,22 +61,23 @@ use anyhow::Result;
 use aoc_lib::utils::prompt_from_stdin;
 use std::io::Write;
 
-mod _2019;
 use _2019::io::{IntRead, IntWrite};
 use _2019::{ints_from_str, Int, Program, StopReason};
 
-impl IntRead for &mut Vec<u8> {
+struct Bits(Vec<u8>);
+
+impl IntRead for &mut Bits {
     fn int_read(&mut self) -> Option<Int> {
-        match self.len() {
+        match self.0.len() {
             0 => None,
-            _ => Some(self.remove(0) as Int),
+            _ => Some(self.0.remove(0) as Int),
         }
     }
 }
 
-impl IntWrite for &mut Vec<u8> {
+impl IntWrite for &mut Bits {
     fn int_write(&mut self, int: Int) {
-        self.push(int as u8);
+        self.0.push(int as u8);
     }
 }
 
@@ -85,21 +86,21 @@ fn main() -> Result<()> {
     let ints = ints_from_str(input);
 
     let mut droid = Program::new(ints);
-    let mut input: Vec<u8> = vec![];
-    let mut output: Vec<u8> = vec![];
+    let mut input = Bits(vec![]);
+    let mut output = Bits(vec![]);
     loop {
         match droid.run(&mut input, &mut output) {
             StopReason::Halt => {
-                println!("{}", String::from_utf8_lossy(&output));
+                println!("{}", String::from_utf8_lossy(&output.0));
                 break;
             }
             StopReason::WaitingForInput => {
-                let output = output.drain(..).collect::<Vec<_>>();
+                let output = output.0.drain(..).collect::<Vec<_>>();
                 let answer = prompt_from_stdin(Some(&format!(
                     "{} ",
                     String::from_utf8_lossy(&output).trim_end()
                 )))?;
-                input.write_all(format!("{}\n", answer).as_bytes())?;
+                input.0.write_all(format!("{}\n", answer).as_bytes())?;
                 println!();
             }
         }

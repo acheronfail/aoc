@@ -131,7 +131,6 @@
 // Try every combination of the new phase settings on the amplifier feedback loop. *What is the
 // highest signal that can be sent to the thrusters?*
 
-mod _2019;
 use _2019::{ints_from_str, Program, StopReason};
 
 use anyhow::Result;

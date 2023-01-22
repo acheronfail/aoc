@@ -71,8 +71,6 @@
 //
 // *In how many assignment pairs do the ranges overlap?*
 
-use std::ops::{RangeBounds, RangeInclusive};
-
 use anyhow::Result;
 
 fn main() -> Result<()> {
@@ -83,37 +81,31 @@ fn main() -> Result<()> {
         start.parse::<usize>().unwrap()..=end.parse::<usize>().unwrap()
     };
 
-    let range_contains = |a: RangeInclusive<usize>, b: RangeInclusive<usize>| {
-        a.contains(b.start()) && a.contains(b.end()) || b.contains(a.start()) && b.contains(a.end())
-    };
-
-    let sum = input
+    let ranges = input
         .lines()
         .map(|line| {
-            let (first, second) = line.split_once(',').unwrap();
-            let (first, second) = (str_to_range(first), str_to_range(second));
-            range_contains(first, second)
+            let (a, b) = line.split_once(',').unwrap();
+            (str_to_range(a), str_to_range(b))
         })
-        .map(|bool| if bool { 1 } else { 0 })
-        .sum::<usize>();
+        .collect::<Vec<_>>();
 
-    aoc_lib::set_part_1!(sum);
-
-    let range_contains = |a: RangeInclusive<usize>, b: RangeInclusive<usize>| {
-        a.contains(b.start()) || a.contains(b.end()) || b.contains(a.start()) || b.contains(a.end())
-    };
-
-    let sum = input
-        .lines()
-        .map(|line| {
-            let (first, second) = line.split_once(',').unwrap();
-            let (first, second) = (str_to_range(first), str_to_range(second));
-            range_contains(first, second)
+    aoc_lib::set_part_1!(ranges
+        .iter()
+        .filter(|r| {
+            r.0.contains(r.1.start()) && r.0.contains(r.1.end())
+                || r.1.contains(r.0.start()) && r.1.contains(r.0.end())
         })
-        .map(|bool| if bool { 1 } else { 0 })
-        .sum::<usize>();
+        .count());
 
-    aoc_lib::set_part_2!(sum);
+    aoc_lib::set_part_1!(ranges
+        .iter()
+        .filter(|r| {
+            r.0.contains(r.1.start())
+                || r.0.contains(r.1.end())
+                || r.1.contains(r.0.start())
+                || r.1.contains(r.0.end())
+        })
+        .count());
 
     Ok(())
 }
